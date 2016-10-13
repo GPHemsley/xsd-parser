@@ -5,11 +5,12 @@
 ###
 
 
-# Part 1, Section 3.1.1: Components and Properties
+# XSD 1.1, Part 1: 3.1.1 Components and Properties
 class Absent:
 	def __repr__(self):
 		return "Absent()"
 
+# XSD 1.1, Part 1: 3.1.1 Components and Properties
 class Keyword(str):
 	def __init__(self, name):
 		self.name = name
@@ -21,6 +22,7 @@ class Keyword(str):
 ###
 
 
+# XSD 1.1, Part 1: 3.1.1 Components and Properties
 class PropertyGroup:
 	def __init__(self, **properties):
 		pass
@@ -40,11 +42,13 @@ class PropertyGroup:
 		return properties.get(property_name, Absent())
 
 
+# XSD 1.1, Part 1: 2.2 XSD Abstract Data Model
 class Component(PropertyGroup):
 	def __init__(self, **properties):
 		super().__init__(**properties)
 
 
+# XSD 1.1, Part 1: 3.1.1 Components and Properties
 class PropertyRecord(PropertyGroup):
 	def __init__(self, **properties):
 		super().__init__(**properties)
@@ -53,6 +57,7 @@ class PropertyRecord(PropertyGroup):
 ###
 
 
+# XSD 1.1, Part 1: 3.15.1 The Annotation Schema Component
 class Annotation(Component):
 	def __init__(self, **properties):
 		super().__init__(**properties)
@@ -80,6 +85,7 @@ class Annotation(Component):
 			raise TypeError("'attributes' must be a set of Attribute information items")
 
 
+# XSD 1.1, Part 1: 3.15.1 The Annotation Schema Component
 class AnnotatedComponent(Component):
 	def __init__(self, **properties):
 		super().__init__(**properties)
@@ -92,11 +98,13 @@ class AnnotatedComponent(Component):
 			raise TypeError("'annotations' must be a list of Annotation components")
 
 
+# XSD 1.1, Part 1: 2.2.1 Type Definition Components
 class TypeDefinition(AnnotatedComponent):
 	def __init__(self, **properties):
 		super().__init__(**properties)
 
 
+# XSD 1.1, Part 1: 3.4.1 The Complex Type Definition Schema Component
 class ComplexTypeDefinition(TypeDefinition):
 	def __init__(self, **properties):
 		super().__init__(**properties)
@@ -185,6 +193,8 @@ class ComplexTypeDefinition(TypeDefinition):
 
 
 
+# XSD 1.1, Part 1: 3.16.1 The Simple Type Definition Schema Component
+# XSD 1.1, Part 2: 4.1.1 The Simple Type Definition Schema Component
 class SimpleTypeDefinitionBase(TypeDefinition):
 	def __init__(self, **properties):
 		super().__init__(**properties)
@@ -234,14 +244,12 @@ class SimpleTypeDefinitionBase(TypeDefinition):
 		else:
 			raise TypeError("'base_type_definition' must be a Type Definition component")
 
-		# TODO: Enforce Constraining Facet component on 'facets'.
-		if isinstance(facets, set):# and all(isinstance(facet, ConstrainingFacet) for facet in facets):
+		if isinstance(facets, set) and all(isinstance(facet, ConstrainingFacet) for facet in facets):
 			self.facets = facets
 		else:
 			raise TypeError("'facets' must be a set of Constraining Facet components")
 
-		# TODO: Enforce Fundamental Facet component on 'fundamental_facets'.
-		if isinstance(fundamental_facets, set):# and all(isinstance(fundamental_facet, FundamentalFacet) for fundamental_facet in fundamental_facets):
+		if isinstance(fundamental_facets, set) and all(isinstance(fundamental_facet, FundamentalFacet) for fundamental_facet in fundamental_facets):
 			self.fundamental_facets = fundamental_facets
 		else:
 			raise TypeError("'fundamental_facets' must be a set of Fundamental Facet components")
@@ -285,6 +293,8 @@ class SimpleTypeDefinitionBase(TypeDefinition):
 				raise TypeError("'member_type_definitions' must be absent if 'variety' is not 'union'")
 
 
+# XSD 1.1, Part 1: 3.16.1 The Simple Type Definition Schema Component
+# XSD 1.1, Part 2: 4.1.1 The Simple Type Definition Schema Component
 class SimpleTypeDefinition(SimpleTypeDefinitionBase):
 	def __init__(self, **properties):
 		super().__init__(**properties)
@@ -305,11 +315,13 @@ class SimpleTypeDefinition(SimpleTypeDefinitionBase):
 				raise TypeError("'primitive_type_definition' must be absent if 'variety' is not 'atomic'")
 
 
+# XSD 1.1, Part 1: 2.2.3.2 Particle
 class Term(AnnotatedComponent):
 	def __init__(self, **properties):
 		super().__init__(**properties)
 
 
+# XSD 1.1, Part 1: 3.3.1 The Element Declaration Schema Component
 class ElementDeclaration(Term):
 	def __init__(self, **properties):
 		super().__init__(**properties)
@@ -392,6 +404,7 @@ class ElementDeclaration(Term):
 			raise TypeError("'abstract' must be an xs:boolean value")
 
 
+# XSD 1.1, Part 1: 3.8.1 The Model Group Schema Component
 class ModelGroup(Term):
 	def __init__(self, **properties):
 		super().__init__(**properties)
@@ -410,6 +423,7 @@ class ModelGroup(Term):
 			raise TypeError("'particles' must be a list of Particle components")
 
 
+# XSD 1.1, Part 1: 3.10.1 The Wildcard Schema Component
 class Wildcard(Term):
 	def __init__(self, **properties):
 		super().__init__(**properties)
@@ -428,6 +442,7 @@ class Wildcard(Term):
 			raise TypeError("'process_contents' must be one of { 'skip', 'strict', 'lax' }")
 
 
+# XSD 1.1, Part 1: 3.9.1 The Particle Schema Component
 # NOTE: The spec doesn't explicitly call Particle an Annotated Component.
 class Particle(AnnotatedComponent):
 	def __init__(self, **properties):
@@ -456,6 +471,7 @@ class Particle(AnnotatedComponent):
 			raise TypeError("'term' must be a Term component")
 
 
+# XSD 1.1, Part 1: 3.2.1 The Attribute Declaration Schema Component
 class AttributeDeclaration(AnnotatedComponent):
 	def __init__(self, **properties):
 		super().__init__(**properties)
@@ -502,6 +518,7 @@ class AttributeDeclaration(AnnotatedComponent):
 
 
 
+# XSD 1.1, Part 1: 3.5.1 The Attribute Use Schema Component
 class AttributeUse(AnnotatedComponent):
 	def __init__(self, **properties):
 		super().__init__(**properties)
@@ -534,6 +551,7 @@ class AttributeUse(AnnotatedComponent):
 			raise TypeError("'inheritable' must be an xs:boolean value")
 
 
+# XSD 1.1, Part 1: 3.6.1 The Attribute Group Definition Schema Component
 class AttributeGroupDefinition(AnnotatedComponent):
 	def __init__(self, **properties):
 		super().__init__(**properties)
@@ -566,6 +584,7 @@ class AttributeGroupDefinition(AnnotatedComponent):
 			raise TypeError("'attribute_wildcard' must be a Wildcard component")
 
 
+# XSD 1.1, Part 1: 3.7.1 The Model Group Definition Schema Component
 class ModelGroupDefinition(AnnotatedComponent):
 	def __init__(self, **properties):
 		super().__init__(**properties)
@@ -592,6 +611,7 @@ class ModelGroupDefinition(AnnotatedComponent):
 			raise TypeError("'model_group' must be a Model Group component")
 
 
+# XSD 1.1, Part 1: 3.11.1 The Identity-constraint Definition Schema Component
 class IdentityConstraintDefinition(AnnotatedComponent):
 	def __init__(self, **properties):
 		super().__init__(**properties)
@@ -649,6 +669,7 @@ class IdentityConstraintDefinition(AnnotatedComponent):
 				raise TypeError("'referenced_key' must be absent if 'identity_constraint_category' is not 'keyref'")
 
 
+# XSD 1.1, Part 1: 3.12.1 The Type Alternative Schema Component
 class TypeAlternative(AnnotatedComponent):
 	def __init__(self, **properties):
 		super().__init__(**properties)
@@ -667,6 +688,7 @@ class TypeAlternative(AnnotatedComponent):
 			raise TypeError("'type_definition' must be a Type Definition component")
 
 
+# XSD 1.1, Part 1: 3.13.1 The Assertion Schema Component
 class Assertion(AnnotatedComponent):
 	def __init__(self, **properties):
 		super().__init__(**properties)
@@ -679,6 +701,7 @@ class Assertion(AnnotatedComponent):
 			raise TypeError("'test' must be an XPath Expression property record")
 
 
+# XSD 1.1, Part 1: 3.14.1 The Notation Declaration Schema Component
 class NotationDeclaration(AnnotatedComponent):
 	def __init__(self, **properties):
 		super().__init__(**properties)
@@ -717,7 +740,7 @@ class NotationDeclaration(AnnotatedComponent):
 			raise TypeError("'target_identifier' must be an XML publicID value")
 
 
-
+# XSD 1.1, Part 1: 3.17.1 The Schema Itself
 class Schema(AnnotatedComponent):
 	def __init__(self, **properties):
 		super().__init__(**properties)
@@ -769,6 +792,8 @@ class Schema(AnnotatedComponent):
 ###
 
 
+# XSD 1.1, Part 1: 3.2.1 The Attribute Declaration Schema Component
+# XSD 1.1, Part 1: 3.3.1 The Element Declaration Schema Component
 class Scope(PropertyRecord):
 	def __init__(self, **properties):
 		super().__init__(**properties)
@@ -790,6 +815,7 @@ class Scope(PropertyRecord):
 				raise TypeError("'parent' must be absent if 'variety' is not 'local'")
 
 
+# XSD 1.1, Part 1: 3.2.1 The Attribute Declaration Schema Component
 class AttributeDeclarationScope(Scope):
 	def __init__(self, **properties):
 		super().__init__(**properties)
@@ -803,6 +829,7 @@ class AttributeDeclarationScope(Scope):
 				raise TypeError("'parent' must be either a Complex Type Definition component or an Attribute Group Definition component if 'variety' is 'local'")
 
 
+# XSD 1.1, Part 1: 3.3.1 The Element Declaration Schema Component
 class ElementDeclarationScope(Scope):
 	def __init__(self, **properties):
 		super().__init__(**properties)
@@ -816,6 +843,9 @@ class ElementDeclarationScope(Scope):
 				raise TypeError("'parent' must be either a Complex Type Definition component or a Model Group Definition component if 'variety' is 'local'")
 
 
+# XSD 1.1, Part 1: 3.2.1 The Attribute Declaration Schema Component
+# XSD 1.1, Part 1: 3.3.1 The Element Declaration Schema Component
+# XSD 1.1, Part 1: 3.5.1 The Attribute Use Schema Component
 class ValueConstraint(PropertyRecord):
 	def __init__(self, **properties):
 		super().__init__(**properties)
@@ -842,21 +872,25 @@ class ValueConstraint(PropertyRecord):
 			raise TypeError("'lexical_form' must be a character string")
 
 
+# XSD 1.1, Part 1: 3.2.1 The Attribute Declaration Schema Component
 class AttributeDeclarationValueConstraint(ValueConstraint):
 	def __init__(self, **properties):
 		super().__init__(**properties)
 
 
+# XSD 1.1, Part 1: 3.3.1 The Element Declaration Schema Component
 class ElementDeclarationValueConstraint(ValueConstraint):
 	def __init__(self, **properties):
 		super().__init__(**properties)
 
 
+# XSD 1.1, Part 1: 3.5.1 The Attribute Use Schema Component
 class AttributeUseValueConstraint(ValueConstraint):
 	def __init__(self, **properties):
 		super().__init__(**properties)
 
 
+# XSD 1.1, Part 1: 3.3.1 The Element Declaration Schema Component
 class TypeTable(PropertyRecord):
 	def __init__(self, **properties):
 		super().__init__(**properties)
@@ -875,6 +909,7 @@ class TypeTable(PropertyRecord):
 			raise TypeError("'default_type_definition' must be a Type Alternative component")
 
 
+# XSD 1.1, Part 1: 3.4.1 The Complex Type Definition Schema Component
 class ContentType(PropertyRecord):
 	def __init__(self, **properties):
 		super().__init__(**properties)
@@ -929,6 +964,7 @@ class ContentType(PropertyRecord):
 				raise TypeError("'simple_type_definition' must be absent if 'variety' is not 'simple'")
 
 
+# XSD 1.1, Part 1: 3.4.1 The Complex Type Definition Schema Component
 class OpenContent(PropertyRecord):
 	def __init__(self, **properties):
 		super().__init__(**properties)
@@ -947,6 +983,7 @@ class OpenContent(PropertyRecord):
 			raise TypeError("'wildcard' must be a Wildcard component")
 
 
+# XSD 1.1, Part 1: 3.10.1 The Wildcard Schema Component
 class NamespaceConstraint(PropertyRecord):
 	def __init__(self, **properties):
 		super().__init__(**properties)
@@ -973,6 +1010,7 @@ class NamespaceConstraint(PropertyRecord):
 			raise TypeError("'disallowed_names' must be a set each of whose members is either an xs:QName value or the keyword 'defined' or the keyword 'sibling'")
 
 
+# XSD 1.1, Part 1: 3.13.1 The Assertion Schema Component
 class XPathExpression(PropertyRecord):
 	def __init__(self, **properties):
 		super().__init__(**properties)
@@ -1006,6 +1044,7 @@ class XPathExpression(PropertyRecord):
 			raise TypeError("'expression' must be an XPath 2.0 expression")
 
 
+# XSD 1.1, Part 1: 3.13.1 The Assertion Schema Component
 class NamespaceBinding(PropertyRecord):
 	def __init__(self, **properties):
 		super().__init__(**properties)
@@ -1024,4 +1063,341 @@ class NamespaceBinding(PropertyRecord):
 			self.namespace = namespace
 		else:
 			raise TypeError("'namespace' must be an xs:anyURI value")
+
+
+####
+
+
+# XSD 1.1, Part 2: 4.2 Fundamental Facets
+class FundamentalFacet(Component):
+	def __init__(self, **properties):
+		super().__init__(**properties)
+
+
+# XSD 1.1, Part 2: 4.2.1.1 The ordered Schema Component
+class Ordered(FundamentalFacet):
+	def __init__(self, **properties):
+		super().__init__(**properties)
+
+		value = self.get_required_property(properties, "value")
+
+		if isinstance(value, Keyword) and value in { Keyword("false"), Keyword("partial"), Keyword("total") }:
+			self.value = value
+		else:
+			raise TypeError("'value' must be one of { 'false', 'partial', 'total' }")
+
+
+# XSD 1.1, Part 2: 4.2.2.1 The bounded Schema Component
+class Bounded(FundamentalFacet):
+	def __init__(self, **properties):
+		super().__init__(**properties)
+
+		value = self.get_required_property(properties, "value")
+
+		# TODO: Enforce xs:boolean on 'value'.
+		if isinstance(value, bool):
+			self.value = value
+		else:
+			raise TypeError("'value' must be an xs:boolean value")
+
+
+# XSD 1.1, Part 2: 4.2.3.1 The cardinality Schema Component
+class Cardinality(FundamentalFacet):
+	def __init__(self, **properties):
+		super().__init__(**properties)
+
+		value = self.get_required_property(properties, "value")
+
+		if isinstance(value, Keyword) and value in { Keyword("finite"), Keyword("countably infinite") }:
+			self.value = value
+		else:
+			raise TypeError("'value' must be one of { 'finite', 'countably infinite' }")
+
+
+# XSD 1.1, Part 2: 4.2.4.1 The numeric Schema Component
+class Numeric(FundamentalFacet):
+	def __init__(self, **properties):
+		super().__init__(**properties)
+
+		value = self.get_required_property(properties, "value")
+
+		# TODO: Enforce xs:boolean on 'value'.
+		if isinstance(value, bool):
+			self.value = value
+		else:
+			raise TypeError("'value' must be an xs:boolean value")
+
+
+####
+
+
+# XSD 1.1, Part 2: 4.3 Constraining Facets
+class ConstrainingFacet(AnnotatedComponent):
+	def __init__(self, **properties):
+		super().__init__(**properties)
+
+
+# XSD 1.1, Part 2: 4.3.1.1 The length Schema Component
+class Length(ConstrainingFacet):
+	def __init__(self, **properties):
+		super().__init__(**properties)
+
+		value = self.get_required_property(properties, "value")
+		fixed = self.get_required_property(properties, "fixed")
+
+		# TODO: Enforce xs:nonNegativeInteger on 'value'.
+		if isinstance(value, int) and value >= 0:
+			self.value = value
+		else:
+			raise TypeError("'value' must be an xs:nonNegativeInteger value")
+
+		# TODO: Enforce xs:boolean on 'fixed'.
+		if isinstance(fixed, bool):
+			self.fixed = fixed
+		else:
+			raise TypeError("'fixed' must be an xs:boolean fixed")
+
+
+# XSD 1.1, Part 2: 4.3.2.1 The minLength Schema Component
+class MinLength(ConstrainingFacet):
+	def __init__(self, **properties):
+		super().__init__(**properties)
+
+		value = self.get_required_property(properties, "value")
+		fixed = self.get_required_property(properties, "fixed")
+
+		# TODO: Enforce xs:nonNegativeInteger on 'value'.
+		if isinstance(value, int) and value >= 0:
+			self.value = value
+		else:
+			raise TypeError("'value' must be an xs:nonNegativeInteger value")
+
+		# TODO: Enforce xs:boolean on 'fixed'.
+		if isinstance(fixed, bool):
+			self.fixed = fixed
+		else:
+			raise TypeError("'fixed' must be an xs:boolean fixed")
+
+
+# XSD 1.1, Part 2: 4.3.3.1 The maxLength Schema Component
+class MaxLength(ConstrainingFacet):
+	def __init__(self, **properties):
+		super().__init__(**properties)
+
+		value = self.get_required_property(properties, "value")
+		fixed = self.get_required_property(properties, "fixed")
+
+		# TODO: Enforce xs:nonNegativeInteger on 'value'.
+		if isinstance(value, int) and value >= 0:
+			self.value = value
+		else:
+			raise TypeError("'value' must be an xs:nonNegativeInteger value")
+
+		# TODO: Enforce xs:boolean on 'fixed'.
+		if isinstance(fixed, bool):
+			self.fixed = fixed
+		else:
+			raise TypeError("'fixed' must be an xs:boolean fixed")
+
+
+# XSD 1.1, Part 2: 4.3.4.1 The pattern Schema Component
+class Pattern(ConstrainingFacet):
+	def __init__(self, **properties):
+		super().__init__(**properties)
+
+		value = self.get_required_property(properties, "value")
+
+		# TODO: Enforce regular expressions on 'value'.
+		if isinstance(value, set) and (len(value) > 0) and all(isinstance(v, str) for v in value):
+			self.value = value
+		else:
+			raise TypeError("'value' must be a non-empty set of regular expressions")
+
+
+# XSD 1.1, Part 2: 4.3.5.1 The enumeration Schema Component
+class Enumeration(ConstrainingFacet):
+	def __init__(self, **properties):
+		super().__init__(**properties)
+
+		value = properties.get("value", set())
+
+		# TODO: Enforce value space on 'value'.
+		if isinstance(value, set):# and all(isinstance(v, x) for v in value):
+			self.value = value
+		else:
+			raise TypeError("'value' must be a set of values from the value space of 'base_type_definition'")
+
+
+# XSD 1.1, Part 2: 4.3.6.1 The whiteSpace Schema Component
+class WhiteSpace(ConstrainingFacet):
+	def __init__(self, **properties):
+		super().__init__(**properties)
+
+		value = self.get_required_property(properties, "value")
+		fixed = self.get_required_property(properties, "fixed")
+
+		if isinstance(value, Keyword) and value in { Keyword("preserve"), Keyword("replace"), Keyword("collapse") }:
+			self.value = value
+		else:
+			raise TypeError("'value' must be one of { 'preserve', 'replace', 'collapse' }")
+
+		# TODO: Enforce xs:boolean on 'fixed'.
+		if isinstance(fixed, bool):
+			self.fixed = fixed
+		else:
+			raise TypeError("'fixed' must be an xs:boolean fixed")
+
+
+# XSD 1.1, Part 2: 4.3.7.1 The maxInclusive Schema Component
+class MaxInclusive(ConstrainingFacet):
+	def __init__(self, **properties):
+		super().__init__(**properties)
+
+		value = self.get_required_property(properties, "value")
+		fixed = self.get_required_property(properties, "fixed")
+
+		# TODO: Enforce value space on 'value'.
+		if True:
+			self.value = value
+		else:
+			raise TypeError("'value' must be a value from the value space of 'base_type_definition'")
+
+		# TODO: Enforce xs:boolean on 'fixed'.
+		if isinstance(fixed, bool):
+			self.fixed = fixed
+		else:
+			raise TypeError("'fixed' must be an xs:boolean fixed")
+
+# XSD 1.1, Part 2: 4.3.8.1 The maxExclusive Schema Component
+class MaxExclusive(ConstrainingFacet):
+	def __init__(self, **properties):
+		super().__init__(**properties)
+
+		value = self.get_required_property(properties, "value")
+		fixed = self.get_required_property(properties, "fixed")
+
+		# TODO: Enforce value space on 'value'.
+		if True:
+			self.value = value
+		else:
+			raise TypeError("'value' must be a value from the value space of 'base_type_definition'")
+
+		# TODO: Enforce xs:boolean on 'fixed'.
+		if isinstance(fixed, bool):
+			self.fixed = fixed
+		else:
+			raise TypeError("'fixed' must be an xs:boolean fixed")
+
+# XSD 1.1, Part 2: 4.3.9.1 The minExclusive Schema Component
+class MinExclusive(ConstrainingFacet):
+	def __init__(self, **properties):
+		super().__init__(**properties)
+
+		value = self.get_required_property(properties, "value")
+		fixed = self.get_required_property(properties, "fixed")
+
+		# TODO: Enforce value space on 'value'.
+		if True:
+			self.value = value
+		else:
+			raise TypeError("'value' must be a value from the value space of 'base_type_definition'")
+
+		# TODO: Enforce xs:boolean on 'fixed'.
+		if isinstance(fixed, bool):
+			self.fixed = fixed
+		else:
+			raise TypeError("'fixed' must be an xs:boolean fixed")
+
+# XSD 1.1, Part 2: 4.3.10.1 The minInclusive Schema Component
+class MinInclusive(ConstrainingFacet):
+	def __init__(self, **properties):
+		super().__init__(**properties)
+
+		value = self.get_required_property(properties, "value")
+		fixed = self.get_required_property(properties, "fixed")
+
+		# TODO: Enforce value space on 'value'.
+		if True:
+			self.value = value
+		else:
+			raise TypeError("'value' must be a value from the value space of 'base_type_definition'")
+
+		# TODO: Enforce xs:boolean on 'fixed'.
+		if isinstance(fixed, bool):
+			self.fixed = fixed
+		else:
+			raise TypeError("'fixed' must be an xs:boolean fixed")
+
+# XSD 1.1, Part 2: 4.3.11.1 The totalDigits Schema Component
+class TotalDigits(ConstrainingFacet):
+	def __init__(self, **properties):
+		super().__init__(**properties)
+
+		value = self.get_required_property(properties, "value")
+		fixed = self.get_required_property(properties, "fixed")
+
+		# TODO: Enforce xs:positiveInteger on 'value'.
+		if isinstance(value, int) and value >= 1:
+			self.value = value
+		else:
+			raise TypeError("'value' must be an xs:positiveInteger value")
+
+		# TODO: Enforce xs:boolean on 'fixed'.
+		if isinstance(fixed, bool):
+			self.fixed = fixed
+		else:
+			raise TypeError("'fixed' must be an xs:boolean fixed")
+
+# XSD 1.1, Part 2: 4.3.12.1 The fractionDigits Schema Component
+class FractionDigits(ConstrainingFacet):
+	def __init__(self, **properties):
+		super().__init__(**properties)
+
+		value = self.get_required_property(properties, "value")
+		fixed = self.get_required_property(properties, "fixed")
+
+		# TODO: Enforce xs:nonNegativeInteger on 'value'.
+		if isinstance(value, int) and value >= 0:
+			self.value = value
+		else:
+			raise TypeError("'value' must be an xs:nonNegativeInteger value")
+
+		# TODO: Enforce xs:boolean on 'fixed'.
+		if isinstance(fixed, bool):
+			self.fixed = fixed
+		else:
+			raise TypeError("'fixed' must be an xs:boolean fixed")
+
+# XSD 1.1, Part 2: 4.3.13.1 The assertions Schema Component
+class Assertions(ConstrainingFacet):
+	def __init__(self, **properties):
+		super().__init__(**properties)
+
+		value = properties.get("value", [])
+
+		if isinstance(assertions, list) and all(isinstance(assertion, Assertion) for assertion in assertions):
+			self.assertions = assertions
+		else:
+			raise TypeError("'assertions' must be a list of Assertion components")
+
+
+# XSD 1.1, Part 2: 4.3.14.1 The explicitTimezone Schema Component
+class ExplicitTimezone(ConstrainingFacet):
+	def __init__(self, **properties):
+		super().__init__(**properties)
+
+		value = self.get_required_property(properties, "value")
+		fixed = self.get_required_property(properties, "fixed")
+
+		if isinstance(value, Keyword) and value in { Keyword("required"), Keyword("prohibited"), Keyword("optional") }:
+			self.value = value
+		else:
+			raise TypeError("'value' must be one of { 'required', 'prohibited', 'optional' }")
+
+		# TODO: Enforce xs:boolean on 'fixed'.
+		if isinstance(fixed, bool):
+			self.fixed = fixed
+		else:
+			raise TypeError("'fixed' must be an xs:boolean fixed")
+
 
