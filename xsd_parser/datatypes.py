@@ -5,6 +5,20 @@ import math
 import decimal
 import itertools
 import typing
+import abc
+
+###
+
+#
+# Internal type representations
+#
+
+# Primitive Datatypes
+_String = str
+_Boolean = bool
+_Decimal = decimal.Decimal
+_Float = decimal.Decimal
+_Double = decimal.Decimal
 
 ###
 
@@ -56,7 +70,10 @@ doubleRep = production(noDecimalPtNumeral) + r"|" + production(decimalPtNumeral)
 ###
 
 
+#
 # XSD 1.1, Part 2: E.1 Generic Number-related Functions
+#
+
 def _digitValue(d: str) -> int:
 	if d == "0":
 		value = 0
@@ -226,7 +243,10 @@ def _floatApprox(c: int, e: int, j: int) -> decimal.Decimal:
 ###
 
 
+#
 # XSD 1.1, Part 2: E.1 Generic Number-related Functions
+#
+
 def unsignedNoDecimalMap(N: str) -> int:
 	return _digitSequenceValue(N)
 
@@ -344,7 +364,7 @@ def specialRepCanonicalMap(c: decimal.Decimal) -> str:
 	if math.isnan(c):
 		return "NaN"
 
-def decimalLexicalMap(LEX: str) -> decimal.Decimal:
+def decimalLexicalMap(LEX: str) -> _Decimal:
 	m = re.fullmatch(decimalLexicalRep, LEX)
 
 	if m.group(12) is not None:
@@ -354,13 +374,13 @@ def decimalLexicalMap(LEX: str) -> decimal.Decimal:
 
 	return d.quantize(decimal.Decimal(10) ** -(len(m.group(7)) if m.group(7) is not None else 0))
 
-def decimalCanonicalMap(d: decimal.Decimal) -> str:
+def decimalCanonicalMap(d: _Decimal) -> str:
 	if d == d.to_integral_value():
 		return noDecimalPtCanonicalMap(int(d))
 
 	return decimalPtCanonicalMap(d)
 
-def floatLexicalMap(LEX: str) -> decimal.Decimal:
+def floatLexicalMap(LEX: str) -> _Float:
 	m = re.fullmatch(floatRep, LEX)
 
 	if m.group(36) is not None:
@@ -381,7 +401,7 @@ def floatLexicalMap(LEX: str) -> decimal.Decimal:
 
 	return decimal.Decimal(nV)
 
-def doubleLexicalMap(LEX: str) -> decimal.Decimal:
+def doubleLexicalMap(LEX: str) -> _Double:
 	m = re.fullmatch(doubleRep, LEX)
 
 	if m.group(36) is not None:
@@ -402,7 +422,7 @@ def doubleLexicalMap(LEX: str) -> decimal.Decimal:
 
 	return decimal.Decimal(nV)
 
-def floatCanonicalMap(f: decimal.Decimal) -> str:
+def floatCanonicalMap(f: _Float) -> str:
 	if math.isinf(f) or math.isnan(f):
 		return specialRepCanonicalMap(f)
 
@@ -427,7 +447,7 @@ def floatCanonicalMap(f: decimal.Decimal) -> str:
 	# XXX: This assumes that any intervening zero is insignificant. Is that what we want to happen?
 	return scientificCanonicalMap(s * _floatApprox(c, e, l))
 
-def doubleCanonicalMap(f: decimal.Decimal) -> str:
+def doubleCanonicalMap(f: _Double) -> str:
 	if math.isinf(f) or math.isnan(f):
 		return specialRepCanonicalMap(f)
 
@@ -459,35 +479,62 @@ def doubleCanonicalMap(f: decimal.Decimal) -> str:
 
 
 # XSD 1.1, Part 2: E.4 Lexical and Canonical Mappings for Other Datatypes
-def stringLexicalMap(LEX: str) -> str:
+def stringLexicalMap(LEX: str) -> _String:
 	return LEX
 
-def booleanLexicalMap(LEX: str) -> bool:
+def booleanLexicalMap(LEX: str) -> _Boolean:
 	return True if LEX in { "true", "1" } else False
 
-def stringCanonicalMap(s: str) -> str:
+def stringCanonicalMap(s: _String) -> str:
 	return s
 
-def booleanCanonicalMap(b: bool) -> str:
+def booleanCanonicalMap(b: _Boolean) -> str:
 	return "true" if b else "false"
 
 
 ###
 
 
-class Datatype():
+class Datatype(metaclass=abc.ABCMeta):
 	def __init__(self, literal: str) -> None:
-		if not self.in_lexical_space(literal):
-			raise TypeError("Literal not in lexical space: {}".format(literal))
-
 		self.lexical_representation = literal
-
-		self.value = self.lexical_mapping(self.lexical_representation)
-
-		self.canonical_representation = self.canonical_mapping(self.value)
 
 	def __repr__(self) -> str:
 		return "{}({})".format(self.__class__.__name__, repr(self.lexical_representation))
+
+	@property
+	def lexical_representation(self):
+		return self._lexical_representation
+
+	@lexical_representation.setter
+	def lexical_representation(self, literal: str) -> None:
+		if not self.in_lexical_space(literal):
+			raise TypeError("Literal not in lexical space: {}".format(literal))
+
+		self._lexical_representation = literal
+
+	@property
+	def value(self):
+		return self.lexical_mapping(self.lexical_representation)
+
+	@property
+	def canonical_representation(self):
+		return self.canonical_mapping(self.value)
+
+	@classmethod
+	@abc.abstractmethod
+	def in_lexical_space(cls, literal: str) -> bool:
+		raise NotImplementedError()
+
+	@classmethod
+	@abc.abstractmethod
+	def lexical_mapping(cls, lexical_representation: str) -> typing.Any:
+		raise NotImplementedError()
+
+	@classmethod
+	@abc.abstractmethod
+	def canonical_mapping(cls, value: typing.Any) -> str:
+		raise NotImplementedError()
 
 
 class SpecialDatatype(Datatype):
@@ -507,61 +554,86 @@ class OrdinaryDatatype(Datatype):
 
 # XSD 1.1, Part 2: 3.3.1 string
 class String(PrimitiveDatatype):
-	def in_lexical_space(self, literal: str) -> bool:
+	@classmethod
+	def in_lexical_space(cls, literal: str) -> bool:
 		return bool(re.fullmatch(stringRep, literal))
 
-	def lexical_mapping(self, lexical_representation: str) -> str:
+	@classmethod
+	def lexical_mapping(cls, lexical_representation: str) -> _String:
+		assert cls.in_lexical_space(lexical_representation)
+
 		return stringLexicalMap(lexical_representation)
 
-	def canonical_mapping(self, value: str) -> str:
+	@classmethod
+	def canonical_mapping(cls, value: _String) -> str:
 		return stringCanonicalMap(value)
 
 
 # XSD 1.1, Part 2: 3.3.2 boolean
 class Boolean(PrimitiveDatatype):
-	def in_lexical_space(self, literal: str) -> bool:
+	@classmethod
+	def in_lexical_space(cls, literal: str) -> bool:
 		return bool(re.fullmatch(booleanRep, literal))
 
-	def lexical_mapping(self, lexical_representation: str) -> bool:
+	@classmethod
+	def lexical_mapping(cls, lexical_representation: str) -> _Boolean:
+		assert cls.in_lexical_space(lexical_representation)
+
 		return booleanLexicalMap(lexical_representation)
 
-	def canonical_mapping(self, value: bool) -> str:
+	@classmethod
+	def canonical_mapping(cls, value: _Boolean) -> str:
 		return booleanCanonicalMap(value)
 
 
 # XSD 1.1, Part 2: 3.3.3 decimal
 class Decimal(PrimitiveDatatype):
-	def in_lexical_space(self, literal: str) -> bool:
+	@classmethod
+	def in_lexical_space(cls, literal: str) -> bool:
 		return bool(re.fullmatch(decimalLexicalRep, literal))
 
-	def lexical_mapping(self, lexical_representation: str) -> decimal.Decimal:
+	@classmethod
+	def lexical_mapping(cls, lexical_representation: str) -> _Decimal:
+		assert cls.in_lexical_space(lexical_representation)
+
 		return decimalLexicalMap(lexical_representation)
 
-	def canonical_mapping(self, value: decimal.Decimal) -> str:
+	@classmethod
+	def canonical_mapping(cls, value: _Decimal) -> str:
 		return decimalCanonicalMap(value)
 
 
 # XSD 1.1, Part 2: 3.3.4 float
 class Float(PrimitiveDatatype):
-	def in_lexical_space(self, literal: str) -> bool:
+	@classmethod
+	def in_lexical_space(cls, literal: str) -> bool:
 		return bool(re.fullmatch(floatRep, literal))
 
-	def lexical_mapping(self, lexical_representation: str) -> decimal.Decimal:
+	@classmethod
+	def lexical_mapping(cls, lexical_representation: str) -> _Float:
+		assert cls.in_lexical_space(lexical_representation)
+
 		return floatLexicalMap(lexical_representation)
 
-	def canonical_mapping(self, value: decimal.Decimal) -> str:
+	@classmethod
+	def canonical_mapping(cls, value: _Float) -> str:
 		return floatCanonicalMap(value)
 
 
 # XSD 1.1, Part 2: 3.3.5 double
 class Double(PrimitiveDatatype):
-	def in_lexical_space(self, literal: str) -> bool:
+	@classmethod
+	def in_lexical_space(cls, literal: str) -> bool:
 		return bool(re.fullmatch(floatRep, literal))
 
-	def lexical_mapping(self, lexical_representation: str) -> decimal.Decimal:
+	@classmethod
+	def lexical_mapping(cls, lexical_representation: str) -> _Double:
+		assert cls.in_lexical_space(lexical_representation)
+
 		return doubleLexicalMap(lexical_representation)
 
-	def canonical_mapping(self, value: decimal.Decimal) -> str:
+	@classmethod
+	def canonical_mapping(cls, value: _Double) -> str:
 		return doubleCanonicalMap(value)
 
 
@@ -570,13 +642,18 @@ class Double(PrimitiveDatatype):
 
 # XSD 1.1, Part 2:
 class _____(PrimitiveDatatype):
-	def in_lexical_space(self, literal: str) -> bool:
+	@classmethod
+	def in_lexical_space(cls, literal: str) -> bool:
 		return bool(re.fullmatch("", literal))
 
-	def lexical_mapping(self, lexical_representation: str) -> None:
-		return
+	@classmethod
+	def lexical_mapping(cls, lexical_representation: str) -> None:
+		assert cls.in_lexical_space(lexical_representation)
 
-	def canonical_mapping(self, value: None) -> str:
-		return
+		return _____LexicalMap(lexical_representation)
+
+	@classmethod
+	def canonical_mapping(cls, value: None) -> str:
+		return _____CanonicalMap(value)
 
 
