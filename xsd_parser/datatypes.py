@@ -19,6 +19,11 @@ _Boolean = bool
 _Decimal = decimal.Decimal
 _Float = decimal.Decimal
 _Double = decimal.Decimal
+_Duration = typing.Dict[str, typing.Union[int, decimal.Decimal]]
+
+# Other Built-in Datatypes
+_YearMonthDuration = _Duration
+_DayTimeDuration = _Duration
 
 ###
 
@@ -66,6 +71,27 @@ floatRep = production(noDecimalPtNumeral) + r"|" + production(decimalPtNumeral) 
 
 # XSD 1.1, Part 2: 3.3.5.2 Lexical Mapping
 doubleRep = production(noDecimalPtNumeral) + r"|" + production(decimalPtNumeral) + r"|" + production(scientificNotationNumeral) + r"|" + production(numericalSpecialRep)
+
+# XSD 1.1, Part 2: 3.3.6.2 Lexical Mapping
+duYearFrag = production(unsignedNoDecimalPtNumeral) + r"Y"
+duMonthFrag = production(unsignedNoDecimalPtNumeral) + r"M"
+duDayFrag = production(unsignedNoDecimalPtNumeral) + r"D"
+duHourFrag = production(unsignedNoDecimalPtNumeral) + r"H"
+duMinuteFrag = production(unsignedNoDecimalPtNumeral) + r"M"
+duSecondFrag = r"(" + production(unsignedNoDecimalPtNumeral) + r"|" + production(unsignedDecimalPtNumeral) + r")S"
+duYearMonthFrag = r"(" + production(duYearFrag) + production(duMonthFrag) + r"?)|" + production(duMonthFrag)
+duTimeFrag = r"T((" + production(duHourFrag) + production(duMinuteFrag) + r"?" + production(duSecondFrag) + r"?)|(" + production(duMinuteFrag) + production(duSecondFrag) + r"?)|" + production(duSecondFrag) + r")"
+duDayTimeFrag = r"(" + production(duDayFrag) + production(duTimeFrag) + r"?)|" + production(duTimeFrag)
+durationLexicalRep = r"-?P((" + production(duYearMonthFrag) + production(duDayTimeFrag) + r"?)|" + production(duDayTimeFrag) + r")"
+
+# [...]
+
+# XSD 1.1, Part 2: 3.4.26.1 The yearMonthDuration Lexical Mapping
+yearMonthDurationLexicalRep = r"-?P" + production(duYearMonthFrag)
+
+# XSD 1.1, Part 2: 3.4.27.1 The dayTimeDuration Lexical Space
+dayTimeDurationLexicalRep = r"-?P" + production(duDayTimeFrag)
+
 
 ###
 
@@ -236,6 +262,126 @@ def _round(n: decimal.Decimal, k: int) -> decimal.Decimal:
 # NOTE: The spec passes int 'c' to a function expecting decimal 'n'.
 def _floatApprox(c: int, e: int, j: int) -> decimal.Decimal:
 	return _round(decimal.Decimal(c), j).scaleb(e)
+
+#
+# XSD 1.1, Part 2: E.2 Duration-related Definitions
+#
+
+# NOTE: The spec says "followed by" when it means "preceded by".
+def _duYearFragmentMap(Y: str) -> int:
+	m = re.fullmatch(duYearFrag, Y)
+
+	N = m.group(1)
+
+	return noDecimalMap(N)
+
+# NOTE: The spec says "followed by" when it means "preceded by".
+def _duMonthFragmentMap(M: str) -> int:
+	m = re.fullmatch(duMonthFrag, M)
+
+	N = m.group(1)
+
+	return noDecimalMap(N)
+
+# NOTE: The spec says "followed by" when it means "preceded by".
+def _duDayFragmentMap(D: str) -> int:
+	m = re.fullmatch(duDayFrag, D)
+
+	N = m.group(1)
+
+	return noDecimalMap(N)
+
+# NOTE: The spec says "followed by" when it means "preceded by".
+def _duHourFragmentMap(H: str) -> int:
+	m = re.fullmatch(duHourFrag, H)
+
+	N = m.group(1)
+
+	return noDecimalMap(N)
+
+# NOTE: The spec says "followed by" when it means "preceded by".
+def _duMinuteFragmentMap(M: str) -> int:
+	m = re.fullmatch(duMinuteFrag, M)
+
+	N = m.group(1)
+
+	return noDecimalMap(N)
+
+# NOTE: The spec says "followed by" when it means "preceded by".
+def _duSecondFragmentMap(S: str) -> decimal.Decimal:
+	m = re.fullmatch(duSecondFrag, S)
+
+	N = m.group(1)
+
+	if m.group(4) is not None:
+		return decimalPtMap(N)
+
+	return decimal.Decimal(noDecimalMap(N))
+
+def _duYearMonthFragmentMap(YM: str) -> int:
+	m = re.fullmatch(duYearMonthFrag, YM)
+
+	y = _duYearFragmentMap(m.group(2)) if m.group(2) is not None else 0
+	mi = _duMonthFragmentMap(m.group(5)) if m.group(5) is not None else _duMonthFragmentMap(m.group(8)) if m.group(8) is not None else 0
+
+	return 12 * y + mi
+
+def _duTimeFragmentMap(T: str) -> decimal.Decimal:
+	m = re.fullmatch(duTimeFrag, T)
+
+	# NOTE: The spec says 'duDayFragmentMap' when it means 'duHourFragmentMap'.
+	h = _duHourFragmentMap(m.group(3)) if m.group(3) is not None else 0
+	mi = _duMinuteFragmentMap(m.group(6)) if m.group(6) is not None else _duMinuteFragmentMap(m.group(23)) if m.group(23) is not None else 0
+	s = _duSecondFragmentMap(m.group(9)) if m.group(9) is not None else _duSecondFragmentMap(m.group(26)) if m.group(26) is not None else _duSecondFragmentMap(m.group(39)) if m.group(39) is not None else decimal.Decimal(0)
+
+	return decimal.Decimal(3600 * h + 60 * mi + s)
+
+def _duDayTimeFragmentMap(DT: str) -> decimal.Decimal:
+	m = re.fullmatch(duDayTimeFrag, DT)
+
+	d = _duDayFragmentMap(m.group(2)) if m.group(2) is not None else 0
+	t = _duTimeFragmentMap(m.group(5)) if m.group(5) is not None else _duTimeFragmentMap(m.group(57)) if m.group(57) is not None else decimal.Decimal(0)
+
+	return decimal.Decimal(86400 * d + t)
+
+# XXX: This could be DRYed.
+def _duYearMonthCanonicalFragmentMap(ym: int) -> str:
+	y = ym // 12
+	m = ym % 12
+
+	if y != 0 and m != 0:
+		return unsignedNoDecimalPtCanonicalMap(y) + "Y" + unsignedNoDecimalPtCanonicalMap(m) + "M"
+
+	if y != 0 and m == 0:
+		return unsignedNoDecimalPtCanonicalMap(y) + "Y"
+
+	if y == 0:
+		return unsignedNoDecimalPtCanonicalMap(m) + "M"
+
+def _duDayCanonicalFragmentMap(d: int) -> str:
+	return unsignedNoDecimalPtCanonicalMap(d) + "D" if d != 0 else ""
+
+def _duHourCanonicalFragmentMap(h: int) -> str:
+	return unsignedNoDecimalPtCanonicalMap(h) + "H" if h != 0 else ""
+
+def _duMinuteCanonicalFragmentMap(m: int) -> str:
+	return unsignedNoDecimalPtCanonicalMap(m) + "M" if m != 0 else ""
+
+def _duSecondCanonicalFragmentMap(s: decimal.Decimal) -> str:
+	s_is_int = True if s == s.to_integral_value() else False
+
+	return unsignedNoDecimalPtCanonicalMap(int(s)) + "S" if s_is_int and s != 0 else unsignedDecimalPtCanonicalMap(s) + "S" if not s_is_int else ""
+
+def _duTimeCanonicalFragmentMap(h: int, m: int, s: decimal.Decimal) -> str:
+	return "T" + _duHourCanonicalFragmentMap(h) + _duMinuteCanonicalFragmentMap(m) + _duSecondCanonicalFragmentMap(s) if h != 0 or m != 0 or s != 0 else ""
+
+def _duDayTimeCanonicalFragmentMap(ss: decimal.Decimal) -> str:
+	d = int(ss // 86400)
+	h = int((ss % 86400) // 3600)
+	m = int((ss % 3600) // 60)
+	s = ss % 60
+
+	return _duDayCanonicalFragmentMap(d) + _duTimeCanonicalFragmentMap(h, m, s) if ss != 0 else "T0S"
 
 # [...]
 
@@ -472,7 +618,56 @@ def doubleCanonicalMap(f: _Double) -> str:
 	# XXX: This assumes that any intervening zero is insignificant. Is that what we want to happen?
 	return scientificCanonicalMap(s * _floatApprox(c, e, l))
 
+def durationMap(DUR: str) -> _Duration:
+	m = re.fullmatch(durationLexicalRep, DUR)
 
+	# NOTE: The spec doesn't use a capture group for the sign.
+	sign = -1 if DUR[0] == "-" else 1
+
+	months = sign * _duYearMonthFragmentMap(m.group(3)) if m.group(3) is not None else 0
+	seconds = sign * _duDayTimeFragmentMap(m.group(14)) if m.group(14) is not None else sign * _duDayTimeFragmentMap(m.group(123)) if m.group(123) is not None else decimal.Decimal(0)
+
+	return { "months": months, "seconds": seconds }
+
+def yearMonthDurationMap(YM: str) -> _YearMonthDuration:
+	m = re.fullmatch(yearMonthDurationLexicalRep, YM)
+
+	# NOTE: The spec doesn't use a capture group for the sign.
+	sign = -1 if YM[0] == "-" else 1
+
+	months = sign * _duYearMonthFragmentMap(m.group(1))
+	seconds = decimal.Decimal(0)
+
+	return { "months": months, "seconds": seconds }
+
+# NOTE: The spec says "a dayTimeDuration value" when it means "matches dayTimeDurationLexicalRep".
+def dayTimeDurationMap(DT: str) -> _DayTimeDuration:
+	m = re.fullmatch(dayTimeDurationLexicalRep, DT)
+
+	# NOTE: The spec doesn't use a capture group for the sign.
+	sign = -1 if DT[0] == "-" else 1
+
+	print(m.re)
+	print(list(enumerate(m.groups(), start=1)))
+
+	months = 0
+	seconds = sign * _duDayTimeFragmentMap(m.group(1))
+
+	return { "months": months, "seconds": seconds }
+
+def durationCanonicalMap(v: _Duration) -> str:
+	m = v["months"]
+	s = v["seconds"]
+	sgn = "-" if m < 0 or s < 0 else ""
+
+	if m != 0 and s != 0:
+		return sgn + "P" + _duYearMonthCanonicalFragmentMap(int(abs(m))) + _duDayTimeCanonicalFragmentMap(s.copy_abs())
+
+	if m != 0 and s == 0:
+		return sgn + "P" + _duYearMonthCanonicalFragmentMap(int(abs(m)))
+
+	if m == 0:
+		return sgn + "P" + _duDayTimeCanonicalFragmentMap(s.copy_abs())
 
 
 # [...]
@@ -635,6 +830,23 @@ class Double(PrimitiveDatatype):
 	@classmethod
 	def canonical_mapping(cls, value: _Double) -> str:
 		return doubleCanonicalMap(value)
+
+# XSD 1.1, Part 2: 3.3.6 duration
+class Duration(PrimitiveDatatype):
+	@classmethod
+	def in_lexical_space(cls, literal: str) -> bool:
+		return bool(re.fullmatch(durationLexicalRep, literal))
+
+	@classmethod
+	def lexical_mapping(cls, lexical_representation: str) -> _Duration:
+		assert cls.in_lexical_space(lexical_representation)
+
+		return durationMap(lexical_representation)
+
+	@classmethod
+	def canonical_mapping(cls, value: _Duration) -> str:
+		return durationCanonicalMap(value)
+
 
 
 
