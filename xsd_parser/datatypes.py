@@ -28,8 +28,20 @@ _DayTimeDuration = _Duration
 ###
 
 
+def check_meets_condition(condition : bool, description : str, value : typing.Any) -> None:
+	if not condition:
+		raise TypeError("Not {}: {}".format(description, value))
+
 def production(regex : str) -> str:
 	return "(" + regex + ")"
+
+def check_matches_production(p : str, s : str) -> None:
+	if not re.fullmatch(p, s):
+		raise TypeError("Does not match production '{}': '{}'".format(p, s))
+
+
+###
+
 
 # XSD 1.1, Part 2: D.1.1 Exact Lexical Mappings
 digit = r"[0-9]"
@@ -103,6 +115,8 @@ dayTimeDurationLexicalRep = r"-?P" + production(duDayTimeFrag)
 # Auxiliary Functions for Operating on Numeral Fragments
 
 def _digitValue(d: str) -> int:
+	check_matches_production(digit, d)
+
 	if d == "0":
 		value = 0
 	elif d == "1":
@@ -123,12 +137,15 @@ def _digitValue(d: str) -> int:
 		value = 8
 	elif d == "9":
 		value = 9
-	else:
-		value = None
+	else:  # pragma: no cover
+		raise RuntimeError
 
 	return value
 
 def _digitSequenceValue(S: str) -> int:
+	for s in S:
+		check_matches_production(digit, s)
+
 	value = 0
 
 	# NOTE: The spec uses 1-based indexing.
@@ -139,6 +156,9 @@ def _digitSequenceValue(S: str) -> int:
 
 # BUG: The spec says this returns an integer.
 def _fractionDigitSequenceValue(S: str) -> decimal.Decimal:
+	for s in S:
+		check_matches_production(digit, s)
+
 	value = decimal.Decimal()
 
 	# NOTE: The spec uses 1-based indexing.
@@ -150,11 +170,15 @@ def _fractionDigitSequenceValue(S: str) -> decimal.Decimal:
 	return value.quantize(decimal.Decimal(10) ** -len(S))
 
 def _fractionFragValue(N: str) -> decimal.Decimal:
+	check_matches_production(fracFrag, N)
+
 	return _fractionDigitSequenceValue(N)
 
 # Auxiliary Functions for Producing Numeral Fragments
 
 def _digit(i : int) -> str:
+	check_meets_condition(i in { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }, "between 0 and 9 inclusive", i)
+
 	if i == 0:
 		d = "0"
 	elif i == 1:
@@ -175,20 +199,24 @@ def _digit(i : int) -> str:
 		d = "8"
 	elif i == 9:
 		d = "9"
-	else:
-		d = None
+	else:  # pragma: no cover
+		raise RuntimeError
 
 	return d
 
 # NOTE: This is a generator because the spec expects it to be infinite.
 def _digitRemainderSeq(i: int) -> typing.Iterator[int]:
+	check_meets_condition(isinstance(i, int) and i >= 0, "a nonnegative integer", i)
+
 	while True:
 		yield i
 		i = i // 10
 
 # NOTE: This is a generator because the spec expects it to be infinite.
 def _digitSeq(i: int) -> typing.Iterator[int]:
-	for k in _digitRemainderSeq(i):
+	check_meets_condition(isinstance(i, int) and i >= 0, "a nonnegative integer", i)
+
+	for k in _digitRemainderSeq(i):  # pragma: no branch
 		yield k % 10
 
 def _lastSignificantDigit(s: typing.Iterator[int]) -> int:
@@ -202,6 +230,8 @@ def _lastSignificantDigit(s: typing.Iterator[int]) -> int:
 # NOTE: This is a generator because the spec expects it to be infinite.
 # BUG: The spec says subtract when it means multiply.
 def _fractionDigitRemainderSeq(f: decimal.Decimal) -> typing.Iterator[decimal.Decimal]:
+	check_meets_condition(isinstance(f, decimal.Decimal) and f >= 0 and f < 1, "a nonnegative decimal number less than 1", f)
+
 	k = f * 10
 
 	while True:
@@ -747,17 +777,17 @@ class Datatype(metaclass=abc.ABCMeta):
 	@classmethod
 	@abc.abstractmethod
 	def in_lexical_space(cls, literal: str) -> bool:
-		raise NotImplementedError()
+		raise NotImplementedError
 
 	@classmethod
 	@abc.abstractmethod
 	def lexical_mapping(cls, lexical_representation: str) -> typing.Any:
-		raise NotImplementedError()
+		raise NotImplementedError
 
 	@classmethod
 	@abc.abstractmethod
 	def canonical_mapping(cls, value: typing.Any) -> str:
-		raise NotImplementedError()
+		raise NotImplementedError
 
 
 class SpecialDatatype(Datatype):
