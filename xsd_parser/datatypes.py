@@ -45,7 +45,7 @@ minimalNumericalSpecialRep = r"INF|-INF|NaN"
 numericalSpecialRep = r"\+INF|" + production(minimalNumericalSpecialRep)
 
 # XSD 1.1, Part 2: D.2.2 Lexical Mappings
-# NOTE: The spec has an erroneous extra parenthesis in its 'yearFrag' production.
+# BUG: The spec has an erroneous extra parenthesis in its 'yearFrag' production.
 yearFrag = r"-?(([1-9]" + production(digit) + production(digit) + production(digit) + r"+)|(0" + production(digit) + production(digit) + production(digit) + r"))"
 monthFrag = r"(0[1-9])|(1[0-2])"
 dayFrag = r"(0[1-9])|([12]" + production(digit) + r")|(3[01])"
@@ -100,6 +100,8 @@ dayTimeDurationLexicalRep = r"-?P" + production(duDayTimeFrag)
 # XSD 1.1, Part 2: E.1 Generic Number-related Functions
 #
 
+# Auxiliary Functions for Operating on Numeral Fragments
+
 def _digitValue(d: str) -> int:
 	if d == "0":
 		value = 0
@@ -135,12 +137,12 @@ def _digitSequenceValue(S: str) -> int:
 
 	return value
 
-# NOTE: The spec says this returns an integer.
+# BUG: The spec says this returns an integer.
 def _fractionDigitSequenceValue(S: str) -> decimal.Decimal:
 	value = decimal.Decimal()
 
 	# NOTE: The spec uses 1-based indexing.
-	# NOTE: The spec subtracts the exponential and expects a non-negative integer result;
+	# BUG: The spec subtracts the exponential and expects a non-negative integer result;
 	#       this multiplies the exponential and expects a non-negative decimal number result.
 	for i in range(1, len(S) + 1):
 		value += decimal.Decimal(_digitValue(S[i-1]) * 10**-i)
@@ -149,6 +151,8 @@ def _fractionDigitSequenceValue(S: str) -> decimal.Decimal:
 
 def _fractionFragValue(N: str) -> decimal.Decimal:
 	return _fractionDigitSequenceValue(N)
+
+# Auxiliary Functions for Producing Numeral Fragments
 
 def _digit(i : int) -> str:
 	if i == 0:
@@ -194,9 +198,9 @@ def _lastSignificantDigit(s: typing.Iterator[int]) -> int:
 
 		j += 1
 
-# NOTE: The spec inexplicably capitalizes the first letter of this function.
+# BUG: The spec inexplicably capitalizes the first letter of this function.
 # NOTE: This is a generator because the spec expects it to be infinite.
-# NOTE: The spec says subtract when it means multiply.
+# BUG: The spec says subtract when it means multiply.
 def _fractionDigitRemainderSeq(f: decimal.Decimal) -> typing.Iterator[decimal.Decimal]:
 	k = f * 10
 
@@ -212,7 +216,7 @@ def _fractionDigitSeq(f: decimal.Decimal) -> typing.Iterator[int]:
 
 def _fractionDigitsCanonicalFragmentMap(f: decimal.Decimal) -> str:
 	output = ""
-	# NOTE: The spec says 'fractionDigitRemainderSeq' when it means 'fractionDigitSeq'.
+	# BUG: The spec says 'fractionDigitRemainderSeq' when it means 'fractionDigitSeq'.
 	stop = _lastSignificantDigit(_fractionDigitSeq(f))
 
 	for j, k in enumerate(_fractionDigitSeq(f)):
@@ -222,6 +226,8 @@ def _fractionDigitsCanonicalFragmentMap(f: decimal.Decimal) -> str:
 			break
 
 	return output
+
+# Auxiliary Functions for Binary Floating-point Lexical/Canonical Mappings
 
 # NOTE: The spec uses inequalities to define variables relative to 'nV'.
 # XXX: This could be DRYed.
@@ -259,7 +265,7 @@ def _floatingPointRound(nV: decimal.Decimal, cWidth: int, eMin: int, eMax: int) 
 def _round(n: decimal.Decimal, k: int) -> decimal.Decimal:
 	return (((n / 10**k) + decimal.Decimal(0.5)) // 1) * 10**k
 
-# NOTE: The spec passes int 'c' to a function expecting decimal 'n'.
+# BUG: The spec passes int 'c' to a function expecting decimal 'n'.
 def _floatApprox(c: int, e: int, j: int) -> decimal.Decimal:
 	return _round(decimal.Decimal(c), j).scaleb(e)
 
@@ -267,7 +273,7 @@ def _floatApprox(c: int, e: int, j: int) -> decimal.Decimal:
 # XSD 1.1, Part 2: E.2 Duration-related Definitions
 #
 
-# NOTE: The spec says "followed by" when it means "preceded by".
+# BUG: The spec says "followed by" when it means "preceded by".
 def _duYearFragmentMap(Y: str) -> int:
 	m = re.fullmatch(duYearFrag, Y)
 
@@ -275,7 +281,7 @@ def _duYearFragmentMap(Y: str) -> int:
 
 	return noDecimalMap(N)
 
-# NOTE: The spec says "followed by" when it means "preceded by".
+# BUG: The spec says "followed by" when it means "preceded by".
 def _duMonthFragmentMap(M: str) -> int:
 	m = re.fullmatch(duMonthFrag, M)
 
@@ -283,7 +289,7 @@ def _duMonthFragmentMap(M: str) -> int:
 
 	return noDecimalMap(N)
 
-# NOTE: The spec says "followed by" when it means "preceded by".
+# BUG: The spec says "followed by" when it means "preceded by".
 def _duDayFragmentMap(D: str) -> int:
 	m = re.fullmatch(duDayFrag, D)
 
@@ -291,7 +297,7 @@ def _duDayFragmentMap(D: str) -> int:
 
 	return noDecimalMap(N)
 
-# NOTE: The spec says "followed by" when it means "preceded by".
+# BUG: The spec says "followed by" when it means "preceded by".
 def _duHourFragmentMap(H: str) -> int:
 	m = re.fullmatch(duHourFrag, H)
 
@@ -299,7 +305,7 @@ def _duHourFragmentMap(H: str) -> int:
 
 	return noDecimalMap(N)
 
-# NOTE: The spec says "followed by" when it means "preceded by".
+# BUG: The spec says "followed by" when it means "preceded by".
 def _duMinuteFragmentMap(M: str) -> int:
 	m = re.fullmatch(duMinuteFrag, M)
 
@@ -307,7 +313,7 @@ def _duMinuteFragmentMap(M: str) -> int:
 
 	return noDecimalMap(N)
 
-# NOTE: The spec says "followed by" when it means "preceded by".
+# BUG: The spec says "followed by" when it means "preceded by".
 def _duSecondFragmentMap(S: str) -> decimal.Decimal:
 	m = re.fullmatch(duSecondFrag, S)
 
@@ -329,7 +335,7 @@ def _duYearMonthFragmentMap(YM: str) -> int:
 def _duTimeFragmentMap(T: str) -> decimal.Decimal:
 	m = re.fullmatch(duTimeFrag, T)
 
-	# NOTE: The spec says 'duDayFragmentMap' when it means 'duHourFragmentMap'.
+	# BUG: The spec says 'duDayFragmentMap' when it means 'duHourFragmentMap'.
 	h = _duHourFragmentMap(m.group(3)) if m.group(3) is not None else 0
 	mi = _duMinuteFragmentMap(m.group(6)) if m.group(6) is not None else _duMinuteFragmentMap(m.group(23)) if m.group(23) is not None else 0
 	s = _duSecondFragmentMap(m.group(9)) if m.group(9) is not None else _duSecondFragmentMap(m.group(26)) if m.group(26) is not None else _duSecondFragmentMap(m.group(39)) if m.group(39) is not None else decimal.Decimal(0)
@@ -393,6 +399,8 @@ def _duDayTimeCanonicalFragmentMap(ss: decimal.Decimal) -> str:
 # XSD 1.1, Part 2: E.1 Generic Number-related Functions
 #
 
+# Generic Numeral-to-Number Lexical Mappings
+
 def unsignedNoDecimalMap(N: str) -> int:
 	return _digitSequenceValue(N)
 
@@ -440,9 +448,9 @@ def scientificMap(N: str) -> decimal.Decimal:
 	C = m.group(3)
 	E = m.group(16)
 
-	# NOTE: The spec remaps the sign from 'scientificMap' onto 'unsignedNoDecimalPtNumeral' and 'unsignedDecimalPtNumeral'
+	# BUG: The spec remaps the sign from 'scientificMap' onto 'unsignedNoDecimalPtNumeral' and 'unsignedDecimalPtNumeral'
 	#       to make them 'noDecimalPtNumeral' and 'decimalPtNumeral', which doesn't really work.
-	# NOTE: The spec says 'unsignedDecimalPtMap' when it means 'noDecimalMap'.
+	# BUG: The spec says 'unsignedDecimalPtMap' when it means 'noDecimalMap'.
 	if m.group(6) is not None:
 		value = unsignedDecimalPtMap(C) * decimal.Decimal(10)**noDecimalMap(E)
 	else:
@@ -450,13 +458,15 @@ def scientificMap(N: str) -> decimal.Decimal:
 
 	return decimal.Decimal(sign * value)
 
+# Generic Number to Numeral Canonical Mappings
+
 def unsignedNoDecimalPtCanonicalMap(i: int) -> str:
 	canonical_representation = ""
 
 	for j, d in enumerate(_digitSeq(i)):
 		canonical_representation = _digit(d) + canonical_representation
 
-		# NOTE: The spec says 'digitRemainderSeq' when it means 'digitSeq'.
+		# BUG: The spec says 'digitRemainderSeq' when it means 'digitSeq'.
 		if j == _lastSignificantDigit(_digitSeq(i)):
 			break
 
@@ -478,7 +488,7 @@ def decimalPtCanonicalMap(i: decimal.Decimal) -> str:
 	return unsignedDecimalPtCanonicalMap(i)
 
 def unsignedScientificCanonicalMap(n: decimal.Decimal) -> str:
-	# NOTE: The spec doesn't handle the possibility of n = 0, even though n is "nonnegative".
+	# BUG: The spec doesn't handle the possibility of n = 0, even though n is "nonnegative".
 	if n == 0:
 		return unsignedDecimalPtCanonicalMap(decimal.Decimal(0)) + "E" + noDecimalPtCanonicalMap(0)
 
@@ -490,6 +500,8 @@ def scientificCanonicalMap(n: decimal.Decimal) -> str:
 
 	return unsignedScientificCanonicalMap(n)
 
+# Lexical Mapping for Non-numerical 'Special Values' Used With Numerical Datatypes
+
 def specialRepValue(S: str) -> decimal.Decimal:
 	if S in { "INF", "+INF" }:
 		return decimal.Decimal(math.inf)
@@ -499,6 +511,8 @@ def specialRepValue(S: str) -> decimal.Decimal:
 
 	if S == "NaN":
 		return decimal.Decimal(math.nan)
+
+# Canonical Mapping for Non-numerical 'Special Values' Used with Numerical Datatypes
 
 def specialRepCanonicalMap(c: decimal.Decimal) -> str:
 	if c == decimal.Decimal(math.inf):
@@ -510,6 +524,8 @@ def specialRepCanonicalMap(c: decimal.Decimal) -> str:
 	if math.isnan(c):
 		return "NaN"
 
+# Lexical Mapping
+
 def decimalLexicalMap(LEX: str) -> _Decimal:
 	m = re.fullmatch(decimalLexicalRep, LEX)
 
@@ -520,11 +536,15 @@ def decimalLexicalMap(LEX: str) -> _Decimal:
 
 	return d.quantize(decimal.Decimal(10) ** -(len(m.group(7)) if m.group(7) is not None else 0))
 
+# Canonical Mapping
+
 def decimalCanonicalMap(d: _Decimal) -> str:
 	if d == d.to_integral_value():
 		return noDecimalPtCanonicalMap(int(d))
 
 	return decimalPtCanonicalMap(d)
+
+# Lexical Mapping
 
 def floatLexicalMap(LEX: str) -> _Float:
 	m = re.fullmatch(floatRep, LEX)
@@ -547,6 +567,8 @@ def floatLexicalMap(LEX: str) -> _Float:
 
 	return decimal.Decimal(nV)
 
+# Lexical Mapping
+
 def doubleLexicalMap(LEX: str) -> _Double:
 	m = re.fullmatch(doubleRep, LEX)
 
@@ -567,6 +589,8 @@ def doubleLexicalMap(LEX: str) -> _Double:
 		return decimal.Decimal("-0") if LEX[0] == "-" else decimal.Decimal("0")
 
 	return decimal.Decimal(nV)
+
+# Canonical Mapping
 
 def floatCanonicalMap(f: _Float) -> str:
 	if math.isinf(f) or math.isnan(f):
@@ -593,6 +617,8 @@ def floatCanonicalMap(f: _Float) -> str:
 	# XXX: This assumes that any intervening zero is insignificant. Is that what we want to happen?
 	return scientificCanonicalMap(s * _floatApprox(c, e, l))
 
+# Canonical Mapping
+
 def doubleCanonicalMap(f: _Double) -> str:
 	if math.isinf(f) or math.isnan(f):
 		return specialRepCanonicalMap(f)
@@ -618,6 +644,8 @@ def doubleCanonicalMap(f: _Double) -> str:
 	# XXX: This assumes that any intervening zero is insignificant. Is that what we want to happen?
 	return scientificCanonicalMap(s * _floatApprox(c, e, l))
 
+#
+
 def durationMap(DUR: str) -> _Duration:
 	m = re.fullmatch(durationLexicalRep, DUR)
 
@@ -640,7 +668,7 @@ def yearMonthDurationMap(YM: str) -> _YearMonthDuration:
 
 	return { "months": months, "seconds": seconds }
 
-# NOTE: The spec says "a dayTimeDuration value" when it means "matches dayTimeDurationLexicalRep".
+# BUG: The spec says "a dayTimeDuration value" when it means "matches dayTimeDurationLexicalRep".
 def dayTimeDurationMap(DT: str) -> _DayTimeDuration:
 	m = re.fullmatch(dayTimeDurationLexicalRep, DT)
 
