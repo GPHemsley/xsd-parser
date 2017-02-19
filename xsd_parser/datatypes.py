@@ -219,8 +219,12 @@ def _digitSeq(i: int) -> typing.Iterator[int]:
 	for k in _digitRemainderSeq(i):  # pragma: no branch
 		yield k % 10
 
+# BUG: The spec mentions 'i' without assigning it meaning.
 def _lastSignificantDigit(s: typing.Iterator[int]) -> int:
 	for j, k in enumerate(s):
+		# NOTE: We can't check the whole sequence ahead of time because it is infinite.
+		check_meets_condition(isinstance(k, int) and k >= 0, "a nonnegative integer", k)
+
 		if k == 0:
 			return j - 1 if j > 0 else 0
 
@@ -240,11 +244,14 @@ def _fractionDigitRemainderSeq(f: decimal.Decimal) -> typing.Iterator[decimal.De
 		k = (k % 1) * 10
 
 # NOTE: This is a generator because the spec expects it to be infinite.
+# BUG: The spec has a random semicolon in its result definition.
 def _fractionDigitSeq(f: decimal.Decimal) -> typing.Iterator[int]:
 	for k in _fractionDigitRemainderSeq(f):
 		yield int(k // 1)
 
 def _fractionDigitsCanonicalFragmentMap(f: decimal.Decimal) -> str:
+	check_meets_condition(isinstance(f, decimal.Decimal) and f >= 0 and f < 1, "a nonnegative decimal number less than 1", f)
+
 	output = ""
 
 	stop = _lastSignificantDigit(_fractionDigitRemainderSeq(f))
@@ -733,15 +740,23 @@ def durationCanonicalMap(v: _Duration) -> str:
 
 # XSD 1.1, Part 2: E.4 Lexical and Canonical Mappings for Other Datatypes
 def stringLexicalMap(LEX: str) -> _String:
+	check_matches_production(stringRep, LEX)
+
 	return LEX
 
 def booleanLexicalMap(LEX: str) -> _Boolean:
+	check_matches_production(booleanRep, LEX)
+
 	return True if LEX in { "true", "1" } else False
 
 def stringCanonicalMap(s: _String) -> str:
+	check_meets_condition(isinstance(s, _String), "a string value", s)
+
 	return s
 
 def booleanCanonicalMap(b: _Boolean) -> str:
+	check_meets_condition(isinstance(b, _Boolean), "a boolean value", b)
+
 	return "true" if b else "false"
 
 

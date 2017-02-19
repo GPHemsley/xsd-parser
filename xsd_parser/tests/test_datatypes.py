@@ -21,6 +21,33 @@ from ..datatypes import (
 )
 from ..datatypes import *
 
+class TestDatatypesHelpers(unittest.TestCase):
+
+	def test_check_meets_condition(self) -> None:
+		with self.subTest():
+			self.assertIsNone(check_meets_condition(True, "always true", True))
+
+		with self.subTest():
+			with self.assertRaises(TypeError):
+				check_meets_condition(False, "always false", False)
+
+	def test_production(self) -> None:
+		with self.subTest():
+			self.assertEqual(production("foo"), "(foo)")
+
+		with self.subTest():
+			with self.assertRaises(TypeError):
+				production(False)
+
+	def test_check_matches_production(self) -> None:
+		with self.subTest():
+			self.assertIsNone(check_matches_production(production("foo"), "foo"))
+
+		with self.subTest():
+			with self.assertRaises(TypeError):
+				check_matches_production(production("bar"), "foo")
+
+
 class TestDatatypesAuxiliaryFunctions(unittest.TestCase):
 
 	def test__digitValue(self) -> None:
@@ -63,6 +90,7 @@ class TestDatatypesAuxiliaryFunctions(unittest.TestCase):
 			("0123", 123),
 			("1230", 1230),
 			("01230", 1230),
+			(["1", "2", "3"], 123),
 		]
 
 		invalid_inputs = [
@@ -70,6 +98,7 @@ class TestDatatypesAuxiliaryFunctions(unittest.TestCase):
 			"foo",
 			["f", "o", "o"],
 			"123foo",
+			[1, 2, 3],
 		]
 
 		# Test valid inputs have valid outputs.
@@ -92,6 +121,7 @@ class TestDatatypesAuxiliaryFunctions(unittest.TestCase):
 			("0123", decimal.Decimal("0.0123")),
 			("1230", decimal.Decimal("0.1230")),
 			("01230", decimal.Decimal("0.01230")),
+			(["1", "2", "3"], decimal.Decimal("0.123")),
 		]
 
 		invalid_inputs = [
@@ -99,6 +129,7 @@ class TestDatatypesAuxiliaryFunctions(unittest.TestCase):
 			"foo",
 			["f", "o", "o"],
 			"123foo",
+			[1, 2, 3],
 		]
 
 		# Test valid inputs have valid outputs.
@@ -383,7 +414,103 @@ class TestDatatypesAuxiliaryFunctions(unittest.TestCase):
 
 
 class TestDatatypesMappings(unittest.TestCase):
-	pass
+
+	def test_stringLexicalMap(self) -> None:
+		valid_inputs = [
+			("foo", "foo"),
+		]
+
+		invalid_inputs = [
+			123,
+			True,
+		]
+
+		# Test valid inputs have valid outputs.
+		for (s, S) in valid_inputs:
+			with self.subTest(s=s, S=S):
+				self.assertEqual(stringLexicalMap(s), S)
+
+		# Test invalid inputs raise TypeError.
+		for s in invalid_inputs:
+			with self.subTest(s=s):
+				with self.assertRaises(TypeError):
+					stringLexicalMap(s)
+
+	def test_booleanLexicalMap(self) -> None:
+		valid_inputs = [
+			("true", True),
+			("false", False),
+			("1", True),
+			("0", False),
+		]
+
+		invalid_inputs = [
+			"foo",
+			123,
+			True,
+		]
+
+		# Test valid inputs have valid outputs.
+		for (s, B) in valid_inputs:
+			with self.subTest(s=s, B=B):
+				self.assertEqual(booleanLexicalMap(s), B)
+
+		# Test invalid inputs raise TypeError.
+		for s in invalid_inputs:
+			with self.subTest(s=s):
+				with self.assertRaises(TypeError):
+					booleanLexicalMap(s)
+
+	def test_stringCanonicalMap(self) -> None:
+		valid_inputs = [
+			("foo", "foo"),
+		]
+
+		invalid_inputs = [
+			123,
+			True,
+		]
+
+		# Test valid inputs have valid outputs.
+		for (S, s) in valid_inputs:
+			with self.subTest(S=S, s=s):
+				self.assertEqual(stringCanonicalMap(S), s)
+
+		# Test invalid inputs raise TypeError.
+		for S in invalid_inputs:
+			with self.subTest(S=S):
+				with self.assertRaises(TypeError):
+					stringCanonicalMap(S)
+
+	def test_booleanCanonicalMap(self) -> None:
+		valid_inputs = [
+			(True, "true"),
+			(False, "false"),
+		]
+
+		invalid_inputs = [
+			"true",
+			"false",
+			"1",
+			"0",
+			1,
+			0,
+			"foo",
+			123,
+		]
+
+		# Test valid inputs have valid outputs.
+		for (B, b) in valid_inputs:
+			with self.subTest(B=B, b=b):
+				self.assertEqual(booleanCanonicalMap(B), b)
+
+		# Test invalid inputs raise TypeError.
+		for B in invalid_inputs:
+			with self.subTest(B=B):
+				with self.assertRaises(TypeError):
+					booleanCanonicalMap(B)
+
+
 
 ...
 
@@ -392,13 +519,25 @@ class TestDatatypesDatatypes(unittest.TestCase):
 
 	@unittest.mock.patch.multiple(Datatype, __abstractmethods__=set())
 	def test_Datatype(self) -> None:
-		with self.assertRaises(NotImplementedError):
-			Datatype("x")
+		# Test in_lexical_space().
+		with self.subTest():
+			with self.assertRaises(NotImplementedError):
+				Datatype.in_lexical_space("x")
+
+		# Test lexical_mapping().
+		with self.subTest():
+			with self.assertRaises(NotImplementedError):
+				Datatype.lexical_mapping("x")
+
+		# Test canonical_mapping().
+		with self.subTest():
+			with self.assertRaises(NotImplementedError):
+				Datatype.canonical_mapping("x")
 
 		class ExampleDatatype(Datatype):
 			@classmethod
 			def in_lexical_space(cls, literal: str) -> bool:
-				return True
+				return False if literal is None else True
 
 			@classmethod
 			def lexical_mapping(cls, lexical_representation: str) -> typing.Any:
@@ -410,7 +549,30 @@ class TestDatatypesDatatypes(unittest.TestCase):
 			def canonical_mapping(cls, value: typing.Any) -> str:
 				return value
 
-		ExampleDatatype("x")
+		# Test __init__() and lexical_representation.setter with good input.
+		x = ExampleDatatype("x")
+
+		# Test lexical_representation.
+		with self.subTest():
+			self.assertEqual(x.lexical_representation, "x")
+
+		# Test __repr__().
+		with self.subTest():
+			self.assertEqual(Datatype.__repr__(x), "ExampleDatatype('x')")
+
+		# Test value.
+		with self.subTest():
+			self.assertEqual(x.value, "x")
+
+		# Test canonical_representation.
+		with self.subTest():
+			self.assertEqual(x.canonical_representation, "x")
+
+		# Test __init__() and lexical_representation.setter with bad input.
+		with self.subTest():
+			with self.assertRaises(TypeError):
+				ExampleDatatype(None)
+
 
 	def test_String(self) -> None:
 		valid_inputs = [
@@ -418,6 +580,11 @@ class TestDatatypesDatatypes(unittest.TestCase):
 		]
 
 		invalid_inputs = [
+			123,
+			True,
+			False,
+			None,
+			123.456,
 		]
 
 		# Test valid inputs have valid outputs.
@@ -430,12 +597,48 @@ class TestDatatypesDatatypes(unittest.TestCase):
 			with self.subTest(s=s, lm=lm):
 				self.assertEqual(x.lexical_mapping(s), lm)
 
-			with self.subTest(s=s, cm=cm):
-				self.assertEqual(x.canonical_mapping(s), cm)
+			with self.subTest(lm=lm, cm=cm):
+				self.assertEqual(x.canonical_mapping(lm), cm)
 
+			with self.subTest(s=s, lm=lm, cm=cm):
+				self.assertEqual(x.canonical_mapping(x.lexical_mapping(s)), cm)
 
 		# Test invalid inputs raise TypeError.
 		for s in invalid_inputs:
 			with self.subTest(s=s):
 				with self.assertRaises(TypeError):
 					String(s)
+
+	def test_Boolean(self) -> None:
+		valid_inputs = [
+			("true", True, "true"),
+			("false", False, "false"),
+			("1", True, "true"),
+			("0", False, "false"),
+		]
+
+		invalid_inputs = [
+			"foo",
+		]
+
+		# Test valid inputs have valid outputs.
+		for (s, lm, cm) in valid_inputs:
+			x = Boolean(s)
+
+			with self.subTest(s=s):
+				self.assertTrue(x.in_lexical_space(s))
+
+			with self.subTest(s=s, lm=lm):
+				self.assertEqual(x.lexical_mapping(s), lm)
+
+			with self.subTest(lm=lm, cm=cm):
+				self.assertEqual(x.canonical_mapping(lm), cm)
+
+			with self.subTest(s=s, lm=lm, cm=cm):
+				self.assertEqual(x.canonical_mapping(x.lexical_mapping(s)), cm)
+
+		# Test invalid inputs raise TypeError.
+		for s in invalid_inputs:
+			with self.subTest(s=s):
+				with self.assertRaises(TypeError):
+					Boolean(s)
