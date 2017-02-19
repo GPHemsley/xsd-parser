@@ -246,10 +246,10 @@ def _fractionDigitSeq(f: decimal.Decimal) -> typing.Iterator[int]:
 
 def _fractionDigitsCanonicalFragmentMap(f: decimal.Decimal) -> str:
 	output = ""
-	# BUG: The spec says 'fractionDigitRemainderSeq' when it means 'fractionDigitSeq'.
-	stop = _lastSignificantDigit(_fractionDigitSeq(f))
 
-	for j, k in enumerate(_fractionDigitSeq(f)):
+	stop = _lastSignificantDigit(_fractionDigitRemainderSeq(f))
+
+	for j, k in enumerate(_fractionDigitSeq(f)):  # pragma: no branch
 		output += _digit(k)
 
 		if j == stop:
