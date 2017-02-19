@@ -24,7 +24,7 @@ from ..datatypes import *
 class TestDatatypesAuxiliaryFunctions(unittest.TestCase):
 
 	def test__digitValue(self) -> None:
-		valid_digits = [
+		valid_inputs = [
 			("0", 0),
 			("1", 1),
 			("2", 2),
@@ -37,25 +37,25 @@ class TestDatatypesAuxiliaryFunctions(unittest.TestCase):
 			("9", 9),
 		]
 
-		invalid_digits = [
+		invalid_inputs = [
 			"10",
 			"1.1",
 			"foo",
 		]
 
-		# Test valid digits have valid output.
-		for (s, i) in valid_digits:
+		# Test valid inputs have valid outputs.
+		for (s, i) in valid_inputs:
 			with self.subTest(s=s, i=i):
 				self.assertEqual(_digitValue(s), i)
 
-		# Test invalid digits raise TypeError.
-		for s in invalid_digits:
+		# Test invalid inputs raise TypeError.
+		for s in invalid_inputs:
 			with self.subTest(s=s):
 				with self.assertRaises(TypeError):
 					_digitValue(s)
 
 	def test__digitSequenceValue(self) -> None:
-		valid_digit_sequences = [
+		valid_inputs = [
 			("", 0),
 			("0", 0),
 			("1", 1),
@@ -65,26 +65,26 @@ class TestDatatypesAuxiliaryFunctions(unittest.TestCase):
 			("01230", 1230),
 		]
 
-		invalid_digit_sequences = [
+		invalid_inputs = [
 			"123.456",
 			"foo",
 			["f", "o", "o"],
 			"123foo",
 		]
 
-		# Test valid digits have valid output.
-		for (s, i) in valid_digit_sequences:
-			with self.subTest(s=s, i=i):
-				self.assertEqual(_digitSequenceValue(s), i)
+		# Test valid inputs have valid outputs.
+		for (seq, i) in valid_inputs:
+			with self.subTest(seq=seq, i=i):
+				self.assertEqual(_digitSequenceValue(seq), i)
 
-		# Test invalid digits raise TypeError.
-		for s in invalid_digit_sequences:
-			with self.subTest(s=s):
+		# Test invalid inputs raise TypeError.
+		for seq in invalid_inputs:
+			with self.subTest(seq=seq):
 				with self.assertRaises(TypeError):
-					_digitSequenceValue(s)
+					_digitSequenceValue(seq)
 
 	def test__fractionDigitSequenceValue(self) -> None:
-		valid_fraction_digit_sequences = [
+		valid_inputs = [
 			("", decimal.Decimal("0")),
 			("0", decimal.Decimal("0.0")),
 			("1", decimal.Decimal("0.1")),
@@ -94,26 +94,26 @@ class TestDatatypesAuxiliaryFunctions(unittest.TestCase):
 			("01230", decimal.Decimal("0.01230")),
 		]
 
-		invalid_fraction_digit_sequences = [
+		invalid_inputs = [
 			"123.456",
 			"foo",
 			["f", "o", "o"],
 			"123foo",
 		]
 
-		# Test valid digits have valid output.
-		for (s, i) in valid_fraction_digit_sequences:
-			with self.subTest(s=s, i=i):
-				self.assertEqual(_fractionDigitSequenceValue(s), i)
+		# Test valid inputs have valid outputs.
+		for (seq, d) in valid_inputs:
+			with self.subTest(seq=seq, d=d):
+				self.assertEqual(_fractionDigitSequenceValue(seq), d)
 
-		# Test invalid digits raise TypeError.
-		for s in invalid_fraction_digit_sequences:
-			with self.subTest(s=s):
+		# Test invalid inputs raise TypeError.
+		for seq in invalid_inputs:
+			with self.subTest(seq=seq):
 				with self.assertRaises(TypeError):
-					_fractionDigitSequenceValue(s)
+					_fractionDigitSequenceValue(seq)
 
 	def test__fractionFragValue(self) -> None:
-		valid_fraction_frags = [
+		valid_inputs = [
 			("0", decimal.Decimal("0.0")),
 			("1", decimal.Decimal("0.1")),
 			("123", decimal.Decimal("0.123")),
@@ -122,7 +122,7 @@ class TestDatatypesAuxiliaryFunctions(unittest.TestCase):
 			("01230", decimal.Decimal("0.01230")),
 		]
 
-		invalid_fraction_frags = [
+		invalid_inputs = [
 			"",
 			"123.456",
 			"foo",
@@ -130,19 +130,19 @@ class TestDatatypesAuxiliaryFunctions(unittest.TestCase):
 			"123foo",
 		]
 
-		# Test valid digits have valid output.
-		for (s, i) in valid_fraction_frags:
-			with self.subTest(s=s, i=i):
-				self.assertEqual(_fractionFragValue(s), i)
+		# Test valid inputs have valid outputs.
+		for (s, d) in valid_inputs:
+			with self.subTest(s=s, d=d):
+				self.assertEqual(_fractionFragValue(s), d)
 
-		# Test invalid digits raise TypeError.
-		for s in invalid_fraction_frags:
+		# Test invalid inputs raise TypeError.
+		for s in invalid_inputs:
 			with self.subTest(s=s):
 				with self.assertRaises(TypeError):
 					_fractionFragValue(s)
 
 	def test__digit(self) -> None:
-		valid_digit_values = [
+		valid_inputs = [
 			(0, "0"),
 			(1, "1"),
 			(2, "2"),
@@ -155,25 +155,25 @@ class TestDatatypesAuxiliaryFunctions(unittest.TestCase):
 			(9, "9"),
 		]
 
-		invalid_digit_values = [
+		invalid_inputs = [
 			10,
 			1.1,
 			"foo",
 		]
 
-		# Test valid digit values have valid output.
-		for (i, s) in valid_digit_values:
+		# Test valid inputs have valid outputs.
+		for (i, s) in valid_inputs:
 			with self.subTest(i=i, s=s):
 				self.assertEqual(_digit(i), s)
 
-		# Test invalid digit values raise TypeError.
-		for i in invalid_digit_values:
+		# Test invalid inputs raise TypeError.
+		for i in invalid_inputs:
 			with self.subTest(i=i):
 				with self.assertRaises(TypeError):
 					_digit(i)
 
 	def test__digitRemainderSeq(self) -> None:
-		valid_input = [
+		valid_inputs = [
 			(123, 5, [123, 12, 1, 0, 0]),
 			(0, 10, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
 			(1, 3, [1, 0, 0]),
@@ -189,26 +189,26 @@ class TestDatatypesAuxiliaryFunctions(unittest.TestCase):
 			(1230, 6, [1230, 123, 12, 1, 0, 0]),
 		]
 
-		invalid_input = [
+		invalid_inputs = [
 			-1,
 			1.1,
 			"foo",
 		]
 
-		# Test valid digit values have valid output.
-		for (i, n, s) in valid_input:
-			with self.subTest(i=i, n=n, s=s):
-				self.assertEqual(list(itertools.islice(_digitRemainderSeq(i), n)), s)
+		# Test valid inputs have valid outputs.
+		for (i, n, seq) in valid_inputs:
+			with self.subTest(i=i, n=n, seq=seq):
+				self.assertEqual(list(itertools.islice(_digitRemainderSeq(i), n)), seq)
 
-		# Test invalid digit values raise TypeError.
-		for i in invalid_input:
+		# Test invalid inputs raise TypeError.
+		for i in invalid_inputs:
 			with self.subTest(i=i):
 				with self.assertRaises(TypeError):
 					# Generator doesn't raise exception until used.
 					next(_digitRemainderSeq(i))
 
 	def test__digitSeq(self) -> None:
-		valid_input = [
+		valid_inputs = [
 			(123, 5, [3, 2, 1, 0, 0]),
 			(0, 10, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
 			(1, 3, [1, 0, 0]),
@@ -224,26 +224,26 @@ class TestDatatypesAuxiliaryFunctions(unittest.TestCase):
 			(1230, 6, [0, 3, 2, 1, 0, 0]),
 		]
 
-		invalid_input = [
+		invalid_inputs = [
 			-1,
 			1.1,
 			"foo",
 		]
 
-		# Test valid digit values have valid output.
-		for (i, n, s) in valid_input:
-			with self.subTest(i=i, n=n, s=s):
-				self.assertEqual(list(itertools.islice(_digitSeq(i), n)), s)
+		# Test valid inputs have valid outputs.
+		for (i, n, seq) in valid_inputs:
+			with self.subTest(i=i, n=n, seq=seq):
+				self.assertEqual(list(itertools.islice(_digitSeq(i), n)), seq)
 
-		# Test invalid digit values raise TypeError.
-		for i in invalid_input:
+		# Test invalid inputs raise TypeError.
+		for i in invalid_inputs:
 			with self.subTest(i=i):
 				with self.assertRaises(TypeError):
 					# Generator doesn't raise exception until used.
 					next(_digitSeq(i))
 
 	def test__lastSignificantDigit(self) -> None:
-		valid_sequence_values = [
+		valid_inputs = [
 			(_digitRemainderSeq(123), 2),
 			(_fractionDigitRemainderSeq(decimal.Decimal("0.4567")), 3),
 			(_digitSeq(0), 0),
@@ -255,64 +255,64 @@ class TestDatatypesAuxiliaryFunctions(unittest.TestCase):
 			(_digitSeq(123000), 0), # BUG: 5? 3?
 		]
 
-		invalid_sequence_values = [
+		invalid_inputs = [
 			...
 		]
 
-		# Test valid sequence values have valid output.
-		for (s, i) in valid_sequence_values:
-			with self.subTest(s=s, i=i):
-				self.assertEqual(_lastSignificantDigit(s), i)
+		# Test valid inputs have valid outputs.
+		for (seq, i) in valid_inputs:
+			with self.subTest(seq=seq, i=i):
+				self.assertEqual(_lastSignificantDigit(seq), i)
 
-		# Test invalid sequence values raise TypeError.
-		for s in invalid_sequence_values:
-			with self.subTest(s=s):
+		# Test invalid inputs raise TypeError.
+		for seq in invalid_inputs:
+			with self.subTest(seq=seq):
 				with self.assertRaises(TypeError):
-					_lastSignificantDigit(s)
+					_lastSignificantDigit(seq)
 
 	def test__fractionDigitRemainderSeq(self) -> None:
-		def d(f: str) -> decimal.Decimal:
+		def dec(f: str) -> decimal.Decimal:
 			return decimal.Decimal(f)
 
-		valid_input = [
-			(d("0.4567"), 6, [d("4.5670"), d("5.6700"), d("6.7000"), d("7.0000"), d("0.0000"), d("0.0000")]),
-			(d("0.0"), 10, [d("0.0"), d("0.0"), d("0.0"), d("0.0"), d("0.0"), d("0.0"), d("0.0"), d("0.0"), d("0.0"), d("0.0")]),
-			(d("0.1"), 3, [d("1.0"), d("0.0"), d("0.0")]),
-			(d("0.2"), 3, [d("2.0"), d("0.0"), d("0.0")]),
-			(d("0.3"), 3, [d("3.0"), d("0.0"), d("0.0")]),
-			(d("0.4"), 3, [d("4.0"), d("0.0"), d("0.0")]),
-			(d("0.5"), 3, [d("5.0"), d("0.0"), d("0.0")]),
-			(d("0.6"), 3, [d("6.0"), d("0.0"), d("0.0")]),
-			(d("0.7"), 3, [d("7.0"), d("0.0"), d("0.0")]),
-			(d("0.8"), 3, [d("8.0"), d("0.0"), d("0.0")]),
-			(d("0.9"), 3, [d("9.0"), d("0.0"), d("0.0")]),
-			(d("0.123"), 5, [d("1.230"), d("2.300"), d("3.000"), d("0.000"), d("0.000")]),
-			(d("0.1023"), 6, [d("1.0230"), d("0.2300"), d("2.3000"), d("3.0000"), d("0.0000"), d("0.0000")]),
-			(d("0.1230"), 6, [d("1.2300"), d("2.3000"), d("3.0000"), d("0.0000"), d("0.0000"), d("0.0000")]),
+		valid_inputs = [
+			(dec("0.4567"), 6, [dec("4.5670"), dec("5.6700"), dec("6.7000"), dec("7.0000"), dec("0.0000"), dec("0.0000")]),
+			(dec("0.0"), 10, [dec("0.0"), dec("0.0"), dec("0.0"), dec("0.0"), dec("0.0"), dec("0.0"), dec("0.0"), dec("0.0"), dec("0.0"), dec("0.0")]),
+			(dec("0.1"), 3, [dec("1.0"), dec("0.0"), dec("0.0")]),
+			(dec("0.2"), 3, [dec("2.0"), dec("0.0"), dec("0.0")]),
+			(dec("0.3"), 3, [dec("3.0"), dec("0.0"), dec("0.0")]),
+			(dec("0.4"), 3, [dec("4.0"), dec("0.0"), dec("0.0")]),
+			(dec("0.5"), 3, [dec("5.0"), dec("0.0"), dec("0.0")]),
+			(dec("0.6"), 3, [dec("6.0"), dec("0.0"), dec("0.0")]),
+			(dec("0.7"), 3, [dec("7.0"), dec("0.0"), dec("0.0")]),
+			(dec("0.8"), 3, [dec("8.0"), dec("0.0"), dec("0.0")]),
+			(dec("0.9"), 3, [dec("9.0"), dec("0.0"), dec("0.0")]),
+			(dec("0.123"), 5, [dec("1.230"), dec("2.300"), dec("3.000"), dec("0.000"), dec("0.000")]),
+			(dec("0.1023"), 6, [dec("1.0230"), dec("0.2300"), dec("2.3000"), dec("3.0000"), dec("0.0000"), dec("0.0000")]),
+			(dec("0.1230"), 6, [dec("1.2300"), dec("2.3000"), dec("3.0000"), dec("0.0000"), dec("0.0000"), dec("0.0000")]),
 		]
 
-		invalid_input = [
+		invalid_inputs = [
 			-1,
 			1.1,
 			"foo",
-			d("10.234"),
-			d("-1.23"),
+			dec("10.234"),
+			dec("-1.23"),
 		]
 
-		# Test valid digit values have valid output.
-		for (f, n, s) in valid_input:
-			with self.subTest(f=f, n=n, s=s):
-				self.assertEqual(list(itertools.islice(_fractionDigitRemainderSeq(f), n)), s)
+		# Test valid inputs have valid outputs.
+		for (d, n, seq) in valid_inputs:
+			with self.subTest(d=d, n=n, seq=seq):
+				self.assertEqual(list(itertools.islice(_fractionDigitRemainderSeq(d), n)), seq)
 
-		# Test invalid digit values raise TypeError.
-		for f in invalid_input:
-			with self.subTest(f=f):
+		# Test invalid inputs raise TypeError.
+		for d in invalid_inputs:
+			with self.subTest(d=d):
 				with self.assertRaises(TypeError):
 					# Generator doesn't raise exception until used.
-					next(_fractionDigitRemainderSeq(f))
+					next(_fractionDigitRemainderSeq(d))
 
 	def test__fractionDigitSeq(self) -> None:
-		valid_input = [
+		valid_inputs = [
 			(decimal.Decimal("0.4567"), 6, [4, 5, 6, 7, 0, 0]),
 			(decimal.Decimal("0.0"), 10, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
 			(decimal.Decimal("0.1"), 3, [1, 0, 0]),
@@ -329,26 +329,26 @@ class TestDatatypesAuxiliaryFunctions(unittest.TestCase):
 			(decimal.Decimal("0.1230"), 6, [1, 2, 3, 0, 0, 0]),
 		]
 
-		invalid_input = [
+		invalid_inputs = [
 			-1,
 			1.1,
 			"foo",
 		]
 
-		# Test valid digit values have valid output.
-		for (i, n, s) in valid_input:
-			with self.subTest(i=i, n=n, s=s):
-				self.assertEqual(list(itertools.islice(_fractionDigitSeq(i), n)), s)
+		# Test valid inputs have valid outputs.
+		for (d, n, seq) in valid_inputs:
+			with self.subTest(d=d, n=n, seq=seq):
+				self.assertEqual(list(itertools.islice(_fractionDigitSeq(d), n)), seq)
 
-		# Test invalid digit values raise TypeError.
-		for i in invalid_input:
-			with self.subTest(i=i):
+		# Test invalid inputs raise TypeError.
+		for d in invalid_inputs:
+			with self.subTest(d=d):
 				with self.assertRaises(TypeError):
 					# Generator doesn't raise exception until used.
-					next(_fractionDigitSeq(i))
+					next(_fractionDigitSeq(d))
 
 	def test__fractionDigitsCanonicalFragmentMap(self) -> None:
-		valid_input = [
+		valid_inputs = [
 			(decimal.Decimal("0.4567"), "4567"),
 			(decimal.Decimal("0.0"), "0"),
 			(decimal.Decimal("0.1"), "1"),
@@ -359,7 +359,7 @@ class TestDatatypesAuxiliaryFunctions(unittest.TestCase):
 			(decimal.Decimal("0.10230"), "1023"),
 		]
 
-		invalid_input = [
+		invalid_inputs = [
 			"",
 			"123.456",
 			"foo",
@@ -367,16 +367,16 @@ class TestDatatypesAuxiliaryFunctions(unittest.TestCase):
 			"123foo",
 		]
 
-		# Test valid digits have valid output.
-		for (f, s) in valid_input:
-			with self.subTest(f=f, s=s):
-				self.assertEqual(_fractionDigitsCanonicalFragmentMap(f), s)
+		# Test valid inputs have valid outputs.
+		for (d, s) in valid_inputs:
+			with self.subTest(d=d, s=s):
+				self.assertEqual(_fractionDigitsCanonicalFragmentMap(d), s)
 
-		# Test invalid digits raise TypeError.
-		for f in invalid_input:
-			with self.subTest(f=f):
+		# Test invalid inputs raise TypeError.
+		for d in invalid_inputs:
+			with self.subTest(d=d):
 				with self.assertRaises(TypeError):
-					_fractionDigitsCanonicalFragmentMap(f)
+					_fractionDigitsCanonicalFragmentMap(d)
 
 
 ...
@@ -413,14 +413,15 @@ class TestDatatypesDatatypes(unittest.TestCase):
 		ExampleDatatype("x")
 
 	def test_String(self) -> None:
-		valid_input = [
+		valid_inputs = [
 			("foo", "foo", "foo"),
 		]
 
-		invalid_input = [
+		invalid_inputs = [
 		]
 
-		for (s, lm, cm) in valid_input:
+		# Test valid inputs have valid outputs.
+		for (s, lm, cm) in valid_inputs:
 			x = String(s)
 
 			with self.subTest(s=s):
@@ -433,7 +434,8 @@ class TestDatatypesDatatypes(unittest.TestCase):
 				self.assertEqual(x.canonical_mapping(s), cm)
 
 
-		for s in invalid_input:
+		# Test invalid inputs raise TypeError.
+		for s in invalid_inputs:
 			with self.subTest(s=s):
 				with self.assertRaises(TypeError):
 					String(s)

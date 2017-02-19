@@ -28,14 +28,14 @@ _DayTimeDuration = _Duration
 ###
 
 
-def check_meets_condition(condition : bool, description : str, value : typing.Any) -> None:
+def check_meets_condition(condition: bool, description: str, value: typing.Any) -> None:
 	if not condition:
 		raise TypeError("Not {}: {}".format(description, value))
 
-def production(regex : str) -> str:
+def production(regex: str) -> str:
 	return "(" + regex + ")"
 
-def check_matches_production(p : str, s : str) -> None:
+def check_matches_production(p: str, s: str) -> None:
 	if not re.fullmatch(p, s):
 		raise TypeError("Does not match production '{}': '{}'".format(p, s))
 
@@ -142,7 +142,7 @@ def _digitValue(d: str) -> int:
 
 	return value
 
-def _digitSequenceValue(S: str) -> int:
+def _digitSequenceValue(S: typing.Sequence[str]) -> int:
 	for s in S:
 		check_matches_production(digit, s)
 
@@ -155,7 +155,7 @@ def _digitSequenceValue(S: str) -> int:
 	return value
 
 # BUG: The spec says this returns an integer.
-def _fractionDigitSequenceValue(S: str) -> decimal.Decimal:
+def _fractionDigitSequenceValue(S: typing.Sequence[str]) -> decimal.Decimal:
 	for s in S:
 		check_matches_production(digit, s)
 
@@ -756,7 +756,7 @@ class Datatype(metaclass=abc.ABCMeta):
 		return "{}({})".format(self.__class__.__name__, repr(self.lexical_representation))
 
 	@property
-	def lexical_representation(self):
+	def lexical_representation(self) -> str:
 		return self._lexical_representation
 
 	@lexical_representation.setter
@@ -767,11 +767,11 @@ class Datatype(metaclass=abc.ABCMeta):
 		self._lexical_representation = literal
 
 	@property
-	def value(self):
+	def value(self) -> typing.Any:
 		return self.lexical_mapping(self.lexical_representation)
 
 	@property
-	def canonical_representation(self):
+	def canonical_representation(self) -> str:
 		return self.canonical_mapping(self.value)
 
 	@classmethod
