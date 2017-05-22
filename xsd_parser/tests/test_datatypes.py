@@ -384,6 +384,7 @@ class TestDatatypesAuxiliaryFunctions(unittest.TestCase):
 			(decimal.Decimal("0.0"), "0"),
 			(decimal.Decimal("0.1"), "1"),
 			(decimal.Decimal("0.123"), "123"),
+			(decimal.Decimal("0.1023"), "1023"),
 			(decimal.Decimal("0.0123"), "0123"),
 			(decimal.Decimal("0.1230"), "123"),
 			(decimal.Decimal("0.01230"), "0123"),
@@ -414,6 +415,378 @@ class TestDatatypesAuxiliaryFunctions(unittest.TestCase):
 
 
 class TestDatatypesMappings(unittest.TestCase):
+
+	def test_unsignedNoDecimalMap(self) -> None:
+		valid_inputs = [
+			("0", 0),
+			("123", 123),
+		]
+
+		invalid_inputs = [
+			123,
+			123.456,
+			-123,
+			"foo",
+			"123.456",
+			"-123",
+			"-123.456",
+			True,
+		]
+
+		# Test valid inputs have valid outputs.
+		for (s, i) in valid_inputs:
+			with self.subTest(s=s, i=i):
+				self.assertEqual(unsignedNoDecimalMap(s), i)
+
+		# Test invalid inputs raise TypeError.
+		for s in invalid_inputs:
+			with self.subTest(s=s):
+				with self.assertRaises(TypeError):
+					unsignedNoDecimalMap(s)
+
+	def test_noDecimalMap(self) -> None:
+		valid_inputs = [
+			("0", 0),
+			("123", 123),
+			("-0", -0),
+			("-123", -123),
+		]
+
+		invalid_inputs = [
+			123,
+			123.456,
+			-123,
+			"foo",
+			"123.456",
+			"-123.456",
+			True,
+		]
+
+		# Test valid inputs have valid outputs.
+		for (s, i) in valid_inputs:
+			with self.subTest(s=s, i=i):
+				self.assertEqual(noDecimalMap(s), i)
+
+		# Test invalid inputs raise TypeError.
+		for s in invalid_inputs:
+			with self.subTest(s=s):
+				with self.assertRaises(TypeError):
+					noDecimalMap(s)
+
+	def test_unsignedDecimalPtMap(self) -> None:
+		valid_inputs = [
+			("0.", decimal.Decimal("0.")),
+			("123.", decimal.Decimal("123.")),
+			("0.0", decimal.Decimal("0.0")),
+			("123.0", decimal.Decimal("123.0")),
+			("123.456", decimal.Decimal("123.456")),
+			("0.456", decimal.Decimal("0.456")),
+			(".456", decimal.Decimal(".456")),
+			("123.4560", decimal.Decimal("123.4560")),
+			("0.4560", decimal.Decimal("0.4560")),
+			(".4560", decimal.Decimal(".4560")),
+		]
+
+		invalid_inputs = [
+			123,
+			123.456,
+			-123,
+			"foo",
+			"123",
+			"-123",
+			"-123.456",
+			True,
+		]
+
+		# Test valid inputs have valid outputs.
+		for (s, d) in valid_inputs:
+			with self.subTest(s=s, d=d):
+				self.assertEqual(unsignedDecimalPtMap(s), d)
+
+		# Test invalid inputs raise TypeError.
+		for s in invalid_inputs:
+			with self.subTest(s=s):
+				with self.assertRaises(TypeError):
+					unsignedDecimalPtMap(s)
+
+	def test_decimalPtMap(self) -> None:
+		valid_inputs = [
+			("0.", decimal.Decimal("0.")),
+			("123.", decimal.Decimal("123.")),
+			("0.0", decimal.Decimal("0.0")),
+			("123.0", decimal.Decimal("123.0")),
+			("123.456", decimal.Decimal("123.456")),
+			("0.456", decimal.Decimal("0.456")),
+			(".456", decimal.Decimal(".456")),
+			("-0.", decimal.Decimal("-0.")),
+			("-123.", decimal.Decimal("-123.")),
+			("-0.0", decimal.Decimal("-0.0")),
+			("-123.0", decimal.Decimal("-123.0")),
+			("-123.456", decimal.Decimal("-123.456")),
+			("-0.456", decimal.Decimal("-0.456")),
+			("-.456", decimal.Decimal("-.456")),
+		]
+
+		invalid_inputs = [
+			123,
+			123.456,
+			-123,
+			"foo",
+			"123",
+			"-123",
+			True,
+		]
+
+		# Test valid inputs have valid outputs.
+		for (s, d) in valid_inputs:
+			with self.subTest(s=s, d=d):
+				self.assertEqual(decimalPtMap(s), d)
+
+		# Test invalid inputs raise TypeError.
+		for s in invalid_inputs:
+			with self.subTest(s=s):
+				with self.assertRaises(TypeError):
+					decimalPtMap(s)
+
+	def test_scientificMap(self) -> None:
+		valid_inputs = [
+			("0e0", decimal.Decimal("0")),
+			("123e0", decimal.Decimal("123")),
+			("-0e0", decimal.Decimal("-0")),
+			("-123e0", decimal.Decimal("-123")),
+			("0.e0", decimal.Decimal("0.")),
+			("123.e0", decimal.Decimal("123.")),
+			("0.0e0", decimal.Decimal("0.0")),
+			("123.0e0", decimal.Decimal("123.0")),
+			("123.456e0", decimal.Decimal("123.456")),
+			("0.456e0", decimal.Decimal("0.456")),
+			(".456e0", decimal.Decimal(".456")),
+			("-0.e0", decimal.Decimal("-0.")),
+			("-123.e0", decimal.Decimal("-123.")),
+			("-0.0e0", decimal.Decimal("-0.0")),
+			("-123.0e0", decimal.Decimal("-123.0")),
+			("-123.456e0", decimal.Decimal("-123.456")),
+			("-0.456e0", decimal.Decimal("-0.456")),
+			("-.456e0", decimal.Decimal("-.456")),
+			("0E0", decimal.Decimal("0")),
+			("123E0", decimal.Decimal("123")),
+			("-0E0", decimal.Decimal("-0")),
+			("-123E0", decimal.Decimal("-123")),
+			("0.E0", decimal.Decimal("0.")),
+			("123.E0", decimal.Decimal("123.")),
+			("0.0E0", decimal.Decimal("0.0")),
+			("123.0E0", decimal.Decimal("123.0")),
+			("123.456E0", decimal.Decimal("123.456")),
+			("0.456E0", decimal.Decimal("0.456")),
+			(".456E0", decimal.Decimal(".456")),
+			("-0.E0", decimal.Decimal("-0.")),
+			("-123.E0", decimal.Decimal("-123.")),
+			("-0.0E0", decimal.Decimal("-0.0")),
+			("-123.0E0", decimal.Decimal("-123.0")),
+			("-123.456E0", decimal.Decimal("-123.456")),
+			("-0.456E0", decimal.Decimal("-0.456")),
+			("-.456E0", decimal.Decimal("-.456")),
+		]
+
+		invalid_inputs = [
+			123,
+			123.456,
+			-123,
+			"foo",
+			"123",
+			"-123",
+			"123.456",
+			"-123.456",
+			".456",
+			"-.456",
+			True,
+		]
+
+		# Test valid inputs have valid outputs.
+		for (s, d) in valid_inputs:
+			with self.subTest(s=s, d=d):
+				self.assertEqual(scientificMap(s), d)
+
+		# Test invalid inputs raise TypeError.
+		for s in invalid_inputs:
+			with self.subTest(s=s):
+				with self.assertRaises(TypeError):
+					scientificMap(s)
+
+	...
+
+	def test_unsignedNoDecimalPtCanonicalMap(self) -> None:
+		valid_inputs = [
+			(0, "0"),
+			(123, "123"),
+			(1230, "1230"),
+			(12300, "12300"),
+			(12305, "12305"),
+		]
+
+		invalid_inputs = [
+			-123,
+			123.456,
+			-123.456,
+			"foo",
+			"123",
+			"-123",
+			"123.456",
+			"-123.456",
+		]
+
+		# Test valid inputs have valid outputs.
+		for (i, s) in valid_inputs:
+			with self.subTest(i=i, s=s):
+				self.assertEqual(unsignedNoDecimalPtCanonicalMap(i), s)
+
+		# Test invalid inputs raise TypeError.
+		for i in invalid_inputs:
+			with self.subTest(i=i):
+				with self.assertRaises(TypeError):
+					unsignedNoDecimalPtCanonicalMap(i)
+
+	def test_noDecimalPtCanonicalMap(self) -> None:
+		valid_inputs = [
+			(0, "0"),
+			(123, "123"),
+			(1230, "1230"),
+			(12300, "12300"),
+			(12305, "12305"),
+			(-0, "0"),
+			(-123, "-123"),
+			(-1230, "-1230"),
+			(-12300, "-12300"),
+			(-12305, "-12305"),
+		]
+
+		invalid_inputs = [
+			123.456,
+			-123.456,
+			"foo",
+			"123",
+			"-123",
+			"123.456",
+			"-123.456",
+		]
+
+		# Test valid inputs have valid outputs.
+		for (i, s) in valid_inputs:
+			with self.subTest(i=i, s=s):
+				self.assertEqual(noDecimalPtCanonicalMap(i), s)
+
+		# Test invalid inputs raise TypeError.
+		for i in invalid_inputs:
+			with self.subTest(i=i):
+				with self.assertRaises(TypeError):
+					noDecimalPtCanonicalMap(i)
+
+	def test_unsignedDecimalPtCanonicalMap(self) -> None:
+		valid_inputs = [
+			(decimal.Decimal("0"), "0.0"),
+			(decimal.Decimal("123"), "123.0"),
+			(decimal.Decimal("1230"), "1230.0"),
+			(decimal.Decimal("12300"), "12300.0"),
+			(decimal.Decimal("12305"), "12305.0"),
+			(decimal.Decimal("0."), "0.0"),
+			(decimal.Decimal("123."), "123.0"),
+			(decimal.Decimal("1230."), "1230.0"),
+			(decimal.Decimal("12300."), "12300.0"),
+			(decimal.Decimal("12305."), "12305.0"),
+			(decimal.Decimal(".0"), "0.0"),
+			(decimal.Decimal(".123"), "0.123"),
+			# (decimal.Decimal(".1230"), "0.1230"),
+			# (decimal.Decimal(".12300"), "0.12300"),
+			# (decimal.Decimal(".12305"), "0.12305"),
+			(decimal.Decimal("0.0"), "0.0"),
+			(decimal.Decimal("0.123"), "0.123"),
+			# (decimal.Decimal("0.1230"), "0.1230"),
+			# (decimal.Decimal("0.12300"), "0.12300"),
+			# (decimal.Decimal("0.12305"), "0.12305"),
+			(decimal.Decimal("456.0"), "456.0"),
+			(decimal.Decimal("456.123"), "456.123"),
+			# (decimal.Decimal("456.1230"), "456.1230"),
+			# (decimal.Decimal("456.12300"), "456.12300"),
+			# (decimal.Decimal("456.12305"), "456.12305"),
+			(decimal.Decimal("406.0"), "406.0"),
+			(decimal.Decimal("406.123"), "406.123"),
+			# (decimal.Decimal("406.1230"), "406.1230"),
+			# (decimal.Decimal("406.12300"), "406.12300"),
+			# (decimal.Decimal("406.12305"), "406.12305"),
+		]
+
+		invalid_inputs = [
+			decimal.Decimal("-123"),
+			decimal.Decimal("-123."),
+			decimal.Decimal("-123.0"),
+			decimal.Decimal("-123.456"),
+			decimal.Decimal("-0.456"),
+			decimal.Decimal("-.456"),
+			-123,
+			123.456,
+			-123.456,
+			"foo",
+			"123",
+			"-123",
+			"123.456",
+			"-123.456",
+		]
+
+		# Test valid inputs have valid outputs.
+		for (d, s) in valid_inputs:
+			with self.subTest(d=d, s=s):
+				self.assertEqual(unsignedDecimalPtCanonicalMap(d), s)
+
+		# Test invalid inputs raise TypeError.
+		for d in invalid_inputs:
+			with self.subTest(d=d):
+				with self.assertRaises(TypeError):
+					unsignedDecimalPtCanonicalMap(d)
+
+	...
+
+	def test_decimalLexicalMap(self) -> None:
+		valid_inputs = [
+			("0", decimal.Decimal("0")),
+			("123", decimal.Decimal("123")),
+			("-0", decimal.Decimal("-0")),
+			("-123", decimal.Decimal("-123")),
+			("0.", decimal.Decimal("0.")),
+			("123.", decimal.Decimal("123.")),
+			("0.0", decimal.Decimal("0.0")),
+			("123.0", decimal.Decimal("123.0")),
+			("123.456", decimal.Decimal("123.456")),
+			("0.456", decimal.Decimal("0.456")),
+			(".456", decimal.Decimal(".456")),
+			("-0.", decimal.Decimal("-0.")),
+			("-123.", decimal.Decimal("-123.")),
+			("-0.0", decimal.Decimal("-0.0")),
+			("-123.0", decimal.Decimal("-123.0")),
+			("-123.456", decimal.Decimal("-123.456")),
+			("-0.456", decimal.Decimal("-0.456")),
+			("-.456", decimal.Decimal("-.456")),
+		]
+
+		invalid_inputs = [
+			123,
+			123.456,
+			-123,
+			"foo",
+			True,
+		]
+
+		# Test valid inputs have valid outputs.
+		for (s, d) in valid_inputs:
+			with self.subTest(s=s, d=d):
+				self.assertEqual(decimalLexicalMap(s), d)
+
+		# Test invalid inputs raise TypeError.
+		for s in invalid_inputs:
+			with self.subTest(s=s):
+				with self.assertRaises(TypeError):
+					decimalLexicalMap(s)
+
+	...
 
 	def test_stringLexicalMap(self) -> None:
 		valid_inputs = [

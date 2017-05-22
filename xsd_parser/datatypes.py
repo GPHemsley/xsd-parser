@@ -439,9 +439,13 @@ def _duDayTimeCanonicalFragmentMap(ss: decimal.Decimal) -> str:
 # Generic Numeral-to-Number Lexical Mappings
 
 def unsignedNoDecimalMap(N: str) -> int:
+	check_matches_production(unsignedNoDecimalPtNumeral, N)
+
 	return _digitSequenceValue(N)
 
 def noDecimalMap(N: str) -> int:
+	check_matches_production(noDecimalPtNumeral, N)
+
 	m = re.fullmatch(noDecimalPtNumeral, N)
 
 	sign = m.group(1)
@@ -453,6 +457,8 @@ def noDecimalMap(N: str) -> int:
 	return unsignedNoDecimalMap(U)
 
 def unsignedDecimalPtMap(D: str) -> decimal.Decimal:
+	check_matches_production(unsignedDecimalPtNumeral, D)
+
 	m = re.fullmatch(unsignedDecimalPtNumeral, D)
 
 	N = m.group(2)
@@ -468,6 +474,8 @@ def unsignedDecimalPtMap(D: str) -> decimal.Decimal:
 	return value.quantize(decimal.Decimal(10) ** -(len(F) if F is not None else 0))
 
 def decimalPtMap(N: str) -> decimal.Decimal:
+	check_matches_production(decimalPtNumeral, N)
+
 	m = re.fullmatch(decimalPtNumeral, N)
 
 	sign = m.group(1)
@@ -479,6 +487,8 @@ def decimalPtMap(N: str) -> decimal.Decimal:
 	return unsignedDecimalPtMap(U)
 
 def scientificMap(N: str) -> decimal.Decimal:
+	check_matches_production(scientificNotationNumeral, N)
+
 	m = re.fullmatch(scientificNotationNumeral, N)
 
 	sign = -1 if m.group(1) is not None else +1
@@ -498,9 +508,11 @@ def scientificMap(N: str) -> decimal.Decimal:
 # Generic Number to Numeral Canonical Mappings
 
 def unsignedNoDecimalPtCanonicalMap(i: int) -> str:
+	check_meets_condition(isinstance(i, int) and i >= 0, "a nonnegative integer", i)
+
 	canonical_representation = ""
 
-	for j, d in enumerate(_digitSeq(i)):
+	for j, d in enumerate(_digitSeq(i)):  # pragma: no branch
 		canonical_representation = _digit(d) + canonical_representation
 
 		# BUG: The spec says 'digitRemainderSeq' when it means 'digitSeq'.
@@ -510,12 +522,16 @@ def unsignedNoDecimalPtCanonicalMap(i: int) -> str:
 	return canonical_representation
 
 def noDecimalPtCanonicalMap(i: int) -> str:
+	check_meets_condition(isinstance(i, int), "an integer", i)
+
 	if i < 0:
 		return "-" + unsignedNoDecimalPtCanonicalMap(-i)
 
 	return unsignedNoDecimalPtCanonicalMap(i)
 
 def unsignedDecimalPtCanonicalMap(n: decimal.Decimal) -> str:
+	check_meets_condition(isinstance(n, decimal.Decimal) and n >= 0, "a nonnegative decimal number", n)
+
 	return unsignedNoDecimalPtCanonicalMap(int(n // 1)) + "." + _fractionDigitsCanonicalFragmentMap(n % 1)
 
 def decimalPtCanonicalMap(i: decimal.Decimal) -> str:
@@ -564,6 +580,8 @@ def specialRepCanonicalMap(c: decimal.Decimal) -> str:
 # Lexical Mapping
 
 def decimalLexicalMap(LEX: str) -> _Decimal:
+	check_matches_production(decimalLexicalRep, LEX)
+
 	m = re.fullmatch(decimalLexicalRep, LEX)
 
 	if m.group(12) is not None:
@@ -571,7 +589,7 @@ def decimalLexicalMap(LEX: str) -> _Decimal:
 	else:
 		d = decimalPtMap(LEX)
 
-	return d.quantize(decimal.Decimal(10) ** -(len(m.group(7)) if m.group(7) is not None else 0))
+	return d.quantize(decimal.Decimal(10) ** -(len(m.group(7) if m.group(7) is not None else m.group(10) if m.group(10) is not None else "")))
 
 # Canonical Mapping
 
