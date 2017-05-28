@@ -4,4 +4,5 @@ python:
   - "3.6"
   - "3.7-dev"
   - "nightly"
-script: pytest
+install: "pip install coverage"
+script: "coverage run -m unittest && coverage html"
