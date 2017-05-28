@@ -277,13 +277,13 @@ class TestDatatypesAuxiliaryFunctions(unittest.TestCase):
 		valid_inputs = [
 			(_digitRemainderSeq(123), 2),
 			(_fractionDigitRemainderSeq(decimal.Decimal("0.4567")), 3),
-			(_digitSeq(0), 0),
-			(_digitSeq(1), 0),
-			(_digitSeq(12), 1),
-			(_digitSeq(123), 2),
-			(_digitSeq(1023), 1), # BUG: 3?
-			(_digitSeq(1230), 0), # BUG: 3? 1?
-			(_digitSeq(123000), 0), # BUG: 5? 3?
+			(_digitRemainderSeq(0), 0),
+			(_digitRemainderSeq(1), 0),
+			(_digitRemainderSeq(12), 1),
+			(_digitRemainderSeq(123), 2),
+			(_digitRemainderSeq(1023), 3),
+			(_digitRemainderSeq(1230), 3),
+			(_digitRemainderSeq(123000), 5),
 		]
 
 		invalid_inputs = [
@@ -695,24 +695,24 @@ class TestDatatypesMappings(unittest.TestCase):
 			(decimal.Decimal("12305."), "12305.0"),
 			(decimal.Decimal(".0"), "0.0"),
 			(decimal.Decimal(".123"), "0.123"),
-			# (decimal.Decimal(".1230"), "0.1230"),
-			# (decimal.Decimal(".12300"), "0.12300"),
-			# (decimal.Decimal(".12305"), "0.12305"),
+			(decimal.Decimal(".1230"), "0.123"),
+			(decimal.Decimal(".12300"), "0.123"),
+			(decimal.Decimal(".12305"), "0.12305"),
 			(decimal.Decimal("0.0"), "0.0"),
 			(decimal.Decimal("0.123"), "0.123"),
-			# (decimal.Decimal("0.1230"), "0.1230"),
-			# (decimal.Decimal("0.12300"), "0.12300"),
-			# (decimal.Decimal("0.12305"), "0.12305"),
+			(decimal.Decimal("0.1230"), "0.123"),
+			(decimal.Decimal("0.12300"), "0.123"),
+			(decimal.Decimal("0.12305"), "0.12305"),
 			(decimal.Decimal("456.0"), "456.0"),
 			(decimal.Decimal("456.123"), "456.123"),
-			# (decimal.Decimal("456.1230"), "456.1230"),
-			# (decimal.Decimal("456.12300"), "456.12300"),
-			# (decimal.Decimal("456.12305"), "456.12305"),
+			(decimal.Decimal("456.1230"), "456.123"),
+			(decimal.Decimal("456.12300"), "456.123"),
+			(decimal.Decimal("456.12305"), "456.12305"),
 			(decimal.Decimal("406.0"), "406.0"),
 			(decimal.Decimal("406.123"), "406.123"),
-			# (decimal.Decimal("406.1230"), "406.1230"),
-			# (decimal.Decimal("406.12300"), "406.12300"),
-			# (decimal.Decimal("406.12305"), "406.12305"),
+			(decimal.Decimal("406.1230"), "406.123"),
+			(decimal.Decimal("406.12300"), "406.123"),
+			(decimal.Decimal("406.12305"), "406.12305"),
 		]
 
 		invalid_inputs = [

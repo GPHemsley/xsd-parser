@@ -220,10 +220,11 @@ def _digitSeq(i: int) -> typing.Iterator[int]:
 		yield k % 10
 
 # BUG: The spec mentions 'i' without assigning it meaning.
-def _lastSignificantDigit(s: typing.Iterator[int]) -> int:
+# BUG: The spec says this takes a sequence of integers, but then passes in a sequence of decimal numbers in 'fractionDigitsCanonicalFragmentMap'.
+def _lastSignificantDigit(s: typing.Union[typing.Iterator[int], typing.Iterator[decimal.Decimal]]) -> int:
 	for j, k in enumerate(s):
 		# NOTE: We can't check the whole sequence ahead of time because it is infinite.
-		check_meets_condition(isinstance(k, int) and k >= 0, "a nonnegative integer", k)
+		check_meets_condition((isinstance(k, int) or isinstance(k, decimal.Decimal)) and k >= 0, "a nonnegative integer", k)
 
 		if k == 0:
 			return j - 1 if j > 0 else 0
@@ -515,8 +516,7 @@ def unsignedNoDecimalPtCanonicalMap(i: int) -> str:
 	for j, d in enumerate(_digitSeq(i)):  # pragma: no branch
 		canonical_representation = _digit(d) + canonical_representation
 
-		# BUG: The spec says 'digitRemainderSeq' when it means 'digitSeq'.
-		if j == _lastSignificantDigit(_digitSeq(i)):
+		if j == _lastSignificantDigit(_digitRemainderSeq(i)):
 			break
 
 	return canonical_representation
