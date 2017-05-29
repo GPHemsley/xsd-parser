@@ -594,6 +594,8 @@ def decimalLexicalMap(LEX: str) -> _Decimal:
 # Canonical Mapping
 
 def decimalCanonicalMap(d: _Decimal) -> str:
+	check_meets_condition(isinstance(d, decimal.Decimal), "a decimal value", d)
+
 	if d == d.to_integral_value():
 		return noDecimalPtCanonicalMap(int(d))
 

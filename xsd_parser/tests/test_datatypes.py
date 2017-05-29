@@ -683,6 +683,7 @@ class TestDatatypesMappings(unittest.TestCase):
 
 	def test_unsignedDecimalPtCanonicalMap(self) -> None:
 		valid_inputs = [
+			(decimal.Decimal("123.4567"), "123.4567"),
 			(decimal.Decimal("0"), "0.0"),
 			(decimal.Decimal("123"), "123.0"),
 			(decimal.Decimal("1230"), "1230.0"),
@@ -743,6 +744,92 @@ class TestDatatypesMappings(unittest.TestCase):
 				with self.assertRaises(TypeError):
 					unsignedDecimalPtCanonicalMap(d)
 
+	def test_decimalPtCanonicalMap(self) -> None:
+		valid_inputs = [
+			(decimal.Decimal("0"), "0.0"),
+			(decimal.Decimal("123"), "123.0"),
+			(decimal.Decimal("1230"), "1230.0"),
+			(decimal.Decimal("12300"), "12300.0"),
+			(decimal.Decimal("12305"), "12305.0"),
+			(decimal.Decimal("0."), "0.0"),
+			(decimal.Decimal("123."), "123.0"),
+			(decimal.Decimal("1230."), "1230.0"),
+			(decimal.Decimal("12300."), "12300.0"),
+			(decimal.Decimal("12305."), "12305.0"),
+			(decimal.Decimal(".0"), "0.0"),
+			(decimal.Decimal(".123"), "0.123"),
+			(decimal.Decimal(".1230"), "0.123"),
+			(decimal.Decimal(".12300"), "0.123"),
+			(decimal.Decimal(".12305"), "0.12305"),
+			(decimal.Decimal("0.0"), "0.0"),
+			(decimal.Decimal("0.123"), "0.123"),
+			(decimal.Decimal("0.1230"), "0.123"),
+			(decimal.Decimal("0.12300"), "0.123"),
+			(decimal.Decimal("0.12305"), "0.12305"),
+			(decimal.Decimal("456.0"), "456.0"),
+			(decimal.Decimal("456.123"), "456.123"),
+			(decimal.Decimal("456.1230"), "456.123"),
+			(decimal.Decimal("456.12300"), "456.123"),
+			(decimal.Decimal("456.12305"), "456.12305"),
+			(decimal.Decimal("406.0"), "406.0"),
+			(decimal.Decimal("406.123"), "406.123"),
+			(decimal.Decimal("406.1230"), "406.123"),
+			(decimal.Decimal("406.12300"), "406.123"),
+			(decimal.Decimal("406.12305"), "406.12305"),
+			(decimal.Decimal("-0"), "0.0"),
+			(decimal.Decimal("-123"), "-123.0"),
+			(decimal.Decimal("-1230"), "-1230.0"),
+			(decimal.Decimal("-12300"), "-12300.0"),
+			(decimal.Decimal("-12305"), "-12305.0"),
+			(decimal.Decimal("-0."), "0.0"),
+			(decimal.Decimal("-123."), "-123.0"),
+			(decimal.Decimal("-1230."), "-1230.0"),
+			(decimal.Decimal("-12300."), "-12300.0"),
+			(decimal.Decimal("-12305."), "-12305.0"),
+			(decimal.Decimal("-.0"), "0.0"),
+			(decimal.Decimal("-.123"), "-0.123"),
+			(decimal.Decimal("-.1230"), "-0.123"),
+			(decimal.Decimal("-.12300"), "-0.123"),
+			(decimal.Decimal("-.12305"), "-0.12305"),
+			(decimal.Decimal("-0.0"), "0.0"),
+			(decimal.Decimal("-0.123"), "-0.123"),
+			(decimal.Decimal("-0.1230"), "-0.123"),
+			(decimal.Decimal("-0.12300"), "-0.123"),
+			(decimal.Decimal("-0.12305"), "-0.12305"),
+			(decimal.Decimal("-456.0"), "-456.0"),
+			(decimal.Decimal("-456.123"), "-456.123"),
+			(decimal.Decimal("-456.1230"), "-456.123"),
+			(decimal.Decimal("-456.12300"), "-456.123"),
+			(decimal.Decimal("-456.12305"), "-456.12305"),
+			(decimal.Decimal("-406.0"), "-406.0"),
+			(decimal.Decimal("-406.123"), "-406.123"),
+			(decimal.Decimal("-406.1230"), "-406.123"),
+			(decimal.Decimal("-406.12300"), "-406.123"),
+			(decimal.Decimal("-406.12305"), "-406.12305"),
+		]
+
+		invalid_inputs = [
+			-123,
+			123.456,
+			-123.456,
+			"foo",
+			"123",
+			"-123",
+			"123.456",
+			"-123.456",
+		]
+
+		# Test valid inputs have valid outputs.
+		for (d, s) in valid_inputs:
+			with self.subTest(d=d, s=s):
+				self.assertEqual(decimalPtCanonicalMap(d), s)
+
+		# Test invalid inputs raise TypeError.
+		for d in invalid_inputs:
+			with self.subTest(d=d):
+				with self.assertRaises(TypeError):
+					decimalPtCanonicalMap(d)
+
 	...
 
 	def test_decimalLexicalMap(self) -> None:
@@ -771,6 +858,7 @@ class TestDatatypesMappings(unittest.TestCase):
 			123,
 			123.456,
 			-123,
+			-123.456,
 			"foo",
 			True,
 		]
@@ -785,6 +873,50 @@ class TestDatatypesMappings(unittest.TestCase):
 			with self.subTest(s=s):
 				with self.assertRaises(TypeError):
 					decimalLexicalMap(s)
+
+	def test_decimalCanonicalMap(self) -> None:
+		valid_inputs = [
+			(decimal.Decimal("0"), "0"),
+			(decimal.Decimal("123"), "123"),
+			(decimal.Decimal("1034"), "1034"),
+			(decimal.Decimal("123000"), "123000"),
+			(decimal.Decimal("-0"), "0"),
+			(decimal.Decimal("-123"), "-123"),
+			(decimal.Decimal("-1034"), "-1034"),
+			(decimal.Decimal("-123000"), "-123000"),
+			(decimal.Decimal("0.0"), "0"),
+			(decimal.Decimal("0.0000"), "0"),
+			(decimal.Decimal("0.0001"), "0.0001"),
+			(decimal.Decimal("123.456"), "123.456"),
+			(decimal.Decimal("123.456000"), "123.456"),
+			(decimal.Decimal("123.456009"), "123.456009"),
+			(decimal.Decimal("-0.0"), "0"),
+			(decimal.Decimal("-0.0000"), "0"),
+			(decimal.Decimal("-0.0001"), "-0.0001"),
+			(decimal.Decimal("-123.456"), "-123.456"),
+			(decimal.Decimal("-123.456000"), "-123.456"),
+			(decimal.Decimal("-123.456009"), "-123.456009"),
+		]
+
+		invalid_inputs = [
+			123,
+			123.456,
+			-123,
+			-123.456,
+			"foo",
+			True,
+		]
+
+		# Test valid inputs have valid outputs.
+		for (d, s) in valid_inputs:
+			with self.subTest(d=d, s=s):
+				self.assertEqual(decimalCanonicalMap(d), s)
+
+		# Test invalid inputs raise TypeError.
+		for d in invalid_inputs:
+			with self.subTest(d=d):
+				with self.assertRaises(TypeError):
+					decimalCanonicalMap(d)
 
 	...
 
@@ -1015,3 +1147,183 @@ class TestDatatypesDatatypes(unittest.TestCase):
 			with self.subTest(s=s):
 				with self.assertRaises(TypeError):
 					Boolean(s)
+
+	def test_Decimal(self) -> None:
+		valid_inputs = [
+			("0", decimal.Decimal("0"), "0"),
+			("1", decimal.Decimal("1"), "1"),
+			("123", decimal.Decimal("123"), "123"),
+			("+0", decimal.Decimal("0"), "0"),
+			("+1", decimal.Decimal("1"), "1"),
+			("+123", decimal.Decimal("123"), "123"),
+			("-0", decimal.Decimal("-0"), "0"),
+			("-1", decimal.Decimal("-1"), "-1"),
+			("-123", decimal.Decimal("-123"), "-123"),
+			("0.0", decimal.Decimal("0.0"), "0"),
+			("1.0", decimal.Decimal("1.0"), "1"),
+			("123.0", decimal.Decimal("123.0"), "123"),
+			("+0.0", decimal.Decimal("0.0"), "0"),
+			("+1.0", decimal.Decimal("1.0"), "1"),
+			("+123.0", decimal.Decimal("123.0"), "123"),
+			("-0.0", decimal.Decimal("-0.0"), "0"),
+			("-1.0", decimal.Decimal("-1.0"), "-1"),
+			("-123.0", decimal.Decimal("-123.0"), "-123"),
+			("0.000", decimal.Decimal("0.000"), "0"),
+			("1.000", decimal.Decimal("1.000"), "1"),
+			("123.000", decimal.Decimal("123.000"), "123"),
+			("+0.000", decimal.Decimal("0.000"), "0"),
+			("+1.000", decimal.Decimal("1.000"), "1"),
+			("+123.000", decimal.Decimal("123.000"), "123"),
+			("-0.000", decimal.Decimal("-0.000"), "0"),
+			("-1.000", decimal.Decimal("-1.000"), "-1"),
+			("-123.000", decimal.Decimal("-123.000"), "-123"),
+			("0.456", decimal.Decimal("0.456"), "0.456"),
+			("0.0456", decimal.Decimal("0.0456"), "0.0456"),
+			("0.04560", decimal.Decimal("0.04560"), "0.0456"),
+			("0.4560", decimal.Decimal("0.4560"), "0.456"),
+			("0.4506", decimal.Decimal("0.4506"), "0.4506"),
+			(".456", decimal.Decimal("0.456"), "0.456"),
+			(".0456", decimal.Decimal("0.0456"), "0.0456"),
+			(".04560", decimal.Decimal("0.04560"), "0.0456"),
+			(".4560", decimal.Decimal("0.4560"), "0.456"),
+			(".4506", decimal.Decimal("0.4506"), "0.4506"),
+			("+0.456", decimal.Decimal("0.456"), "0.456"),
+			("+0.0456", decimal.Decimal("0.0456"), "0.0456"),
+			("+0.04560", decimal.Decimal("0.04560"), "0.0456"),
+			("+0.4560", decimal.Decimal("0.4560"), "0.456"),
+			("+0.4506", decimal.Decimal("0.4506"), "0.4506"),
+			("+.456", decimal.Decimal("0.456"), "0.456"),
+			("+.0456", decimal.Decimal("0.0456"), "0.0456"),
+			("+.04560", decimal.Decimal("0.04560"), "0.0456"),
+			("+.4560", decimal.Decimal("0.4560"), "0.456"),
+			("+.4506", decimal.Decimal("0.4506"), "0.4506"),
+			("-0.456", decimal.Decimal("-0.456"), "-0.456"),
+			("-0.0456", decimal.Decimal("-0.0456"), "-0.0456"),
+			("-0.04560", decimal.Decimal("-0.04560"), "-0.0456"),
+			("-0.4560", decimal.Decimal("-0.4560"), "-0.456"),
+			("-0.4506", decimal.Decimal("-0.4506"), "-0.4506"),
+			("-.456", decimal.Decimal("-0.456"), "-0.456"),
+			("-.0456", decimal.Decimal("-0.0456"), "-0.0456"),
+			("-.04560", decimal.Decimal("-0.04560"), "-0.0456"),
+			("-.4560", decimal.Decimal("-0.4560"), "-0.456"),
+			("-.4506", decimal.Decimal("-0.4506"), "-0.4506"),
+			("123.456", decimal.Decimal("123.456"), "123.456"),
+			("123.0456", decimal.Decimal("123.0456"), "123.0456"),
+			("123.04560", decimal.Decimal("123.04560"), "123.0456"),
+			("123.4560", decimal.Decimal("123.4560"), "123.456"),
+			("123.4506", decimal.Decimal("123.4506"), "123.4506"),
+			("103.456", decimal.Decimal("103.456"), "103.456"),
+			("103.0456", decimal.Decimal("103.0456"), "103.0456"),
+			("103.04560", decimal.Decimal("103.04560"), "103.0456"),
+			("103.4560", decimal.Decimal("103.4560"), "103.456"),
+			("103.4506", decimal.Decimal("103.4506"), "103.4506"),
+			("1230.456", decimal.Decimal("1230.456"), "1230.456"),
+			("1230.0456", decimal.Decimal("1230.0456"), "1230.0456"),
+			("1230.04560", decimal.Decimal("1230.04560"), "1230.0456"),
+			("1230.4560", decimal.Decimal("1230.4560"), "1230.456"),
+			("1230.4506", decimal.Decimal("1230.4506"), "1230.4506"),
+			("0123.456", decimal.Decimal("123.456"), "123.456"),
+			("0123.0456", decimal.Decimal("123.0456"), "123.0456"),
+			("0123.04560", decimal.Decimal("123.04560"), "123.0456"),
+			("0123.4560", decimal.Decimal("123.4560"), "123.456"),
+			("0123.4506", decimal.Decimal("123.4506"), "123.4506"),
+			("01230.456", decimal.Decimal("1230.456"), "1230.456"),
+			("01230.0456", decimal.Decimal("1230.0456"), "1230.0456"),
+			("01230.04560", decimal.Decimal("1230.04560"), "1230.0456"),
+			("01230.4560", decimal.Decimal("1230.4560"), "1230.456"),
+			("01230.4506", decimal.Decimal("1230.4506"), "1230.4506"),
+			("+123.456", decimal.Decimal("123.456"), "123.456"),
+			("+123.0456", decimal.Decimal("123.0456"), "123.0456"),
+			("+123.04560", decimal.Decimal("123.04560"), "123.0456"),
+			("+123.4560", decimal.Decimal("123.4560"), "123.456"),
+			("+123.4506", decimal.Decimal("123.4506"), "123.4506"),
+			("+103.456", decimal.Decimal("103.456"), "103.456"),
+			("+103.0456", decimal.Decimal("103.0456"), "103.0456"),
+			("+103.04560", decimal.Decimal("103.04560"), "103.0456"),
+			("+103.4560", decimal.Decimal("103.4560"), "103.456"),
+			("+103.4506", decimal.Decimal("103.4506"), "103.4506"),
+			("+1230.456", decimal.Decimal("1230.456"), "1230.456"),
+			("+1230.0456", decimal.Decimal("1230.0456"), "1230.0456"),
+			("+1230.04560", decimal.Decimal("1230.04560"), "1230.0456"),
+			("+1230.4560", decimal.Decimal("1230.4560"), "1230.456"),
+			("+1230.4506", decimal.Decimal("1230.4506"), "1230.4506"),
+			("+0123.456", decimal.Decimal("123.456"), "123.456"),
+			("+0123.0456", decimal.Decimal("123.0456"), "123.0456"),
+			("+0123.04560", decimal.Decimal("123.04560"), "123.0456"),
+			("+0123.4560", decimal.Decimal("123.4560"), "123.456"),
+			("+0123.4506", decimal.Decimal("123.4506"), "123.4506"),
+			("+01230.456", decimal.Decimal("1230.456"), "1230.456"),
+			("+01230.0456", decimal.Decimal("1230.0456"), "1230.0456"),
+			("+01230.04560", decimal.Decimal("1230.04560"), "1230.0456"),
+			("+01230.4560", decimal.Decimal("1230.4560"), "1230.456"),
+			("+01230.4506", decimal.Decimal("1230.4506"), "1230.4506"),
+			("-123.456", decimal.Decimal("-123.456"), "-123.456"),
+			("-123.0456", decimal.Decimal("-123.0456"), "-123.0456"),
+			("-123.04560", decimal.Decimal("-123.04560"), "-123.0456"),
+			("-123.4560", decimal.Decimal("-123.4560"), "-123.456"),
+			("-123.4506", decimal.Decimal("-123.4506"), "-123.4506"),
+			("-103.456", decimal.Decimal("-103.456"), "-103.456"),
+			("-103.0456", decimal.Decimal("-103.0456"), "-103.0456"),
+			("-103.04560", decimal.Decimal("-103.04560"), "-103.0456"),
+			("-103.4560", decimal.Decimal("-103.4560"), "-103.456"),
+			("-103.4506", decimal.Decimal("-103.4506"), "-103.4506"),
+			("-1230.456", decimal.Decimal("-1230.456"), "-1230.456"),
+			("-1230.0456", decimal.Decimal("-1230.0456"), "-1230.0456"),
+			("-1230.04560", decimal.Decimal("-1230.04560"), "-1230.0456"),
+			("-1230.4560", decimal.Decimal("-1230.4560"), "-1230.456"),
+			("-1230.4506", decimal.Decimal("-1230.4506"), "-1230.4506"),
+			("-0123.456", decimal.Decimal("-123.456"), "-123.456"),
+			("-0123.0456", decimal.Decimal("-123.0456"), "-123.0456"),
+			("-0123.04560", decimal.Decimal("-123.04560"), "-123.0456"),
+			("-0123.4560", decimal.Decimal("-123.4560"), "-123.456"),
+			("-0123.4506", decimal.Decimal("-123.4506"), "-123.4506"),
+			("-01230.456", decimal.Decimal("-1230.456"), "-1230.456"),
+			("-01230.0456", decimal.Decimal("-1230.0456"), "-1230.0456"),
+			("-01230.04560", decimal.Decimal("-1230.04560"), "-1230.0456"),
+			("-01230.4560", decimal.Decimal("-1230.4560"), "-1230.456"),
+			("-01230.4506", decimal.Decimal("-1230.4506"), "-1230.4506"),
+			("012345.67890", decimal.Decimal("12345.67890"), "12345.6789"),
+			("+012345.67890", decimal.Decimal("12345.67890"), "12345.6789"),
+			("-012345.67890", decimal.Decimal("-12345.67890"), "-12345.6789"),
+		]
+
+		invalid_inputs = [
+			"foo",
+			"true",
+			"false",
+			"123,456",
+			"+",
+			"-",
+			".",
+			"+-123.456",
+			"-+123",
+			"123..456",
+			123,
+			123.456,
+			True,
+			False,
+			None,
+			"",
+		]
+
+		# Test valid inputs have valid outputs.
+		for (s, lm, cm) in valid_inputs:
+			x = Decimal(s)
+
+			with self.subTest(s=s):
+				self.assertTrue(x.in_lexical_space(s))
+
+			with self.subTest(s=s, lm=lm):
+				self.assertEqual(x.lexical_mapping(s), lm)
+
+			with self.subTest(lm=lm, cm=cm):
+				self.assertEqual(x.canonical_mapping(lm), cm)
+
+			with self.subTest(s=s, lm=lm, cm=cm):
+				self.assertEqual(x.canonical_mapping(x.lexical_mapping(s)), cm)
+
+		# Test invalid inputs raise TypeError.
+		for s in invalid_inputs:
+			with self.subTest(s=s):
+				with self.assertRaises(TypeError):
+					Decimal(s)
