@@ -1,0 +1,8 @@
+[flake8]
+hang_closing = False
+max_complexity = 10
+max_line_length = 158
+use_flake8_tabs = True
+ignore = \
+	# Whitespace inside brackets
+	E201, E202,
