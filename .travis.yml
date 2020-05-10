@@ -2,7 +2,14 @@ language: python
 python:
   - "3.5"
   - "3.6"
-  - "3.7-dev"
+  - "3.7"
+  - "3.8"
+  - "3.9-dev"
   - "nightly"
-install: "pip install coverage"
-script: "coverage run -m unittest && coverage html"
+env:
+  global:
+    - PIPENV_VERBOSITY=-1 PIPENV_SKIP_LOCK=1
+install:
+  - "pipenv install --dev"
+script:
+  - "coverage run -m unittest && coverage html"
